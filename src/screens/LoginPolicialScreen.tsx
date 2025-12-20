@@ -11,9 +11,29 @@ import {
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
-import Geolocation from '@react-native-community/geolocation';
+import {Platform} from 'react-native';
 import {requestLocationPermission} from '../services/locationService';
 import {loginPolicial} from '../services/apiService';
+
+// Importar Geolocation según la plataforma
+let Geolocation: any;
+if (Platform.OS === 'web') {
+  Geolocation = {
+    getCurrentPosition: (
+      success: (position: any) => void,
+      error: (error: any) => void,
+      options: any,
+    ) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error, options);
+      } else {
+        error({message: 'Geolocation no está soportado'});
+      }
+    },
+  };
+} else {
+  Geolocation = require('@react-native-community/geolocation').default;
+}
 
 type LoginPolicialScreenNavigationProp = StackNavigationProp<
   RootStackParamList,

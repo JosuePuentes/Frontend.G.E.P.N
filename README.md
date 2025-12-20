@@ -59,6 +59,14 @@ Consulta `src/assets/images/INSTRUCCIONES.md` para más detalles.
 
 ## 📱 Ejecutar la Aplicación
 
+### 🌐 Navegador Web (NUEVO)
+
+```bash
+npm run web
+```
+
+Esto abrirá la aplicación en `http://localhost:3000` en tu navegador.
+
 ### Android
 
 ```bash
@@ -82,6 +90,8 @@ o
 ```bash
 yarn ios
 ```
+
+**Nota**: La aplicación ahora funciona tanto en navegador web como en dispositivos móviles. Consulta `README_WEB.md` para más detalles sobre la versión web.
 
 ## 🏗️ Estructura del Proyecto
 

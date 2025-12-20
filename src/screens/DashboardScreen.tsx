@@ -11,7 +11,29 @@ import {
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
 import {activarPanico} from '../services/apiService';
-import Geolocation from '@react-native-community/geolocation';
+import {Platform} from 'react-native';
+
+// Importar Geolocation según la plataforma
+let Geolocation: any;
+if (Platform.OS === 'web') {
+  // En web, usar la API nativa del navegador
+  Geolocation = {
+    getCurrentPosition: (
+      success: (position: any) => void,
+      error: (error: any) => void,
+      options: any,
+    ) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error, options);
+      } else {
+        error({message: 'Geolocation no está soportado'});
+      }
+    },
+  };
+} else {
+  // En móvil, usar la librería nativa
+  Geolocation = require('@react-native-community/geolocation').default;
+}
 
 type DashboardScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
