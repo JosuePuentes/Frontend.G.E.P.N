@@ -20,28 +20,17 @@ interface Props {
 
 const HomeScreen: React.FC<Props> = ({navigation}) => {
   // Importar imágenes (las imágenes deben estar en src/assets/images/)
-  // Si las imágenes no existen, el require fallará - agrega las imágenes primero
-  let banderaVenezuela: ImageSourcePropType | null = null;
-  let policiasTacticos: ImageSourcePropType | null = null;
-  let patrullas: ImageSourcePropType | null = null;
-
-  try {
-    banderaVenezuela = require('../../assets/images/bandera-venezuela.png');
-  } catch (e) {
-    console.warn('Imagen bandera-venezuela.png no encontrada');
-  }
-
-  try {
-    policiasTacticos = require('../../assets/images/policias-tacticos.png');
-  } catch (e) {
-    console.warn('Imagen policias-tacticos.png no encontrada');
-  }
-
-  try {
-    patrullas = require('../../assets/images/patrullas.png');
-  } catch (e) {
-    console.warn('Imagen patrullas.png no encontrada');
-  }
+  // Comentar las líneas de require si las imágenes no están disponibles
+  // y descomentarlas cuando agregues las imágenes
+  
+  // Descomenta estas líneas cuando agregues las imágenes:
+  // const banderaVenezuela = require('../../assets/images/bandera-venezuela.png');
+  // const policiasTacticos = require('../../assets/images/policias-tacticos.png');
+  // const patrullas = require('../../assets/images/patrullas.png');
+  
+  const banderaVenezuela: ImageSourcePropType | null = null;
+  const policiasTacticos: ImageSourcePropType | null = null;
+  const patrullas: ImageSourcePropType | null = null;
 
   return (
     <SafeAreaView style={styles.container}>
