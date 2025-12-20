@@ -29,11 +29,11 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Bandera de Venezuela con colores */}
-          <View style={styles.flagContainer}>
-            <View style={[styles.flagStrip, {backgroundColor: amarillo}]} />
-            <View style={[styles.flagStrip, {backgroundColor: azul}]} />
-            <View style={[styles.flagStrip, {backgroundColor: rojo}]} />
+          {/* Línea horizontal con colores de la bandera de Venezuela */}
+          <View style={styles.flagLineContainer}>
+            <View style={[styles.flagLineStrip, {backgroundColor: amarillo}]} />
+            <View style={[styles.flagLineStrip, {backgroundColor: azul}]} />
+            <View style={[styles.flagLineStrip, {backgroundColor: rojo}]} />
           </View>
 
           {/* Título Principal */}
@@ -48,24 +48,24 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
           {/* 4 Iconos con colores de la bandera */}
           <View style={styles.iconsContainer}>
             <View style={[styles.iconBox, {borderColor: amarillo}]}>
-              <View style={[styles.iconCircle, {backgroundColor: amarillo}]} />
+              <View style={[styles.iconCircle, {backgroundColor: amarillo, borderColor: amarillo}]} />
               <Text style={[styles.iconText, {color: amarillo}]}>
                 Detenidos
               </Text>
             </View>
 
             <View style={[styles.iconBox, {borderColor: azul}]}>
-              <View style={[styles.iconCircle, {backgroundColor: azul}]} />
+              <View style={[styles.iconCircle, {backgroundColor: azul, borderColor: azul}]} />
               <Text style={[styles.iconText, {color: azul}]}>Minutas</Text>
             </View>
 
             <View style={[styles.iconBox, {borderColor: rojo}]}>
-              <View style={[styles.iconCircle, {backgroundColor: rojo}]} />
+              <View style={[styles.iconCircle, {backgroundColor: rojo, borderColor: rojo}]} />
               <Text style={[styles.iconText, {color: rojo}]}>Búsqueda</Text>
             </View>
 
             <View style={[styles.iconBox, {borderColor: dorado}]}>
-              <View style={[styles.iconCircle, {backgroundColor: dorado}]} />
+              <View style={[styles.iconCircle, {backgroundColor: dorado, borderColor: dorado}]} />
               <Text style={[styles.iconText, {color: dorado}]}>
                 Más Buscados
               </Text>
@@ -100,18 +100,17 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 40,
   },
-  flagContainer: {
-    width: 200,
-    height: 120,
-    marginBottom: 30,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#D4AF37',
-  },
-  flagStrip: {
-    flex: 1,
+  flagLineContainer: {
     width: '100%',
+    height: 8,
+    flexDirection: 'row',
+    marginBottom: 30,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  flagLineStrip: {
+    flex: 1,
+    height: '100%',
   },
   titleContainer: {
     alignItems: 'center',
@@ -151,21 +150,24 @@ const styles = StyleSheet.create({
   iconBox: {
     width: '48%',
     alignItems: 'center',
-    padding: 20,
+    justifyContent: 'center',
+    padding: 25,
     marginBottom: 15,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 3,
     backgroundColor: '#1a1a1a',
+    minHeight: 120,
   },
   iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginBottom: 10,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginBottom: 12,
+    borderWidth: 3,
   },
   iconText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   loginButton: {
