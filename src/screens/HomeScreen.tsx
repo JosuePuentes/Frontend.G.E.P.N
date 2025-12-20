@@ -5,9 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Image,
   ScrollView,
-  ImageSourcePropType,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
@@ -19,18 +17,11 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({navigation}) => {
-  // Importar imágenes (las imágenes deben estar en src/assets/images/)
-  // Comentar las líneas de require si las imágenes no están disponibles
-  // y descomentarlas cuando agregues las imágenes
-  
-  // Descomenta estas líneas cuando agregues las imágenes:
-  // const banderaVenezuela = require('../../assets/images/bandera-venezuela.png');
-  // const policiasTacticos = require('../../assets/images/policias-tacticos.png');
-  // const patrullas = require('../../assets/images/patrullas.png');
-  
-  const banderaVenezuela: ImageSourcePropType | null = null;
-  const policiasTacticos: ImageSourcePropType | null = null;
-  const patrullas: ImageSourcePropType | null = null;
+  // Colores de la bandera de Venezuela
+  const amarillo = '#FFCC02'; // Amarillo
+  const azul = '#00247D'; // Azul
+  const rojo = '#CF142B'; // Rojo
+  const dorado = '#D4AF37'; // Dorado
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,16 +29,12 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Bandera de Venezuela */}
-          {banderaVenezuela && (
-            <View style={styles.flagContainer}>
-              <Image
-                source={banderaVenezuela}
-                style={styles.flagImage}
-                resizeMode="contain"
-              />
-            </View>
-          )}
+          {/* Bandera de Venezuela con colores */}
+          <View style={styles.flagContainer}>
+            <View style={[styles.flagStrip, {backgroundColor: amarillo}]} />
+            <View style={[styles.flagStrip, {backgroundColor: azul}]} />
+            <View style={[styles.flagStrip, {backgroundColor: rojo}]} />
+          </View>
 
           {/* Título Principal */}
           <View style={styles.titleContainer}>
@@ -58,32 +45,38 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
             </View>
           </View>
 
-          {/* Imágenes de policías y patrullas */}
-          <View style={styles.imagesContainer}>
-            {policiasTacticos && (
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={policiasTacticos}
-                  style={styles.featureImage}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
-            {patrullas && (
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={patrullas}
-                  style={styles.featureImage}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
+          {/* 4 Iconos con colores de la bandera */}
+          <View style={styles.iconsContainer}>
+            <View style={[styles.iconBox, {borderColor: amarillo}]}>
+              <View style={[styles.iconCircle, {backgroundColor: amarillo}]} />
+              <Text style={[styles.iconText, {color: amarillo}]}>
+                Detenidos
+              </Text>
+            </View>
+
+            <View style={[styles.iconBox, {borderColor: azul}]}>
+              <View style={[styles.iconCircle, {backgroundColor: azul}]} />
+              <Text style={[styles.iconText, {color: azul}]}>Minutas</Text>
+            </View>
+
+            <View style={[styles.iconBox, {borderColor: rojo}]}>
+              <View style={[styles.iconCircle, {backgroundColor: rojo}]} />
+              <Text style={[styles.iconText, {color: rojo}]}>Búsqueda</Text>
+            </View>
+
+            <View style={[styles.iconBox, {borderColor: dorado}]}>
+              <View style={[styles.iconCircle, {backgroundColor: dorado}]} />
+              <Text style={[styles.iconText, {color: dorado}]}>
+                Más Buscados
+              </Text>
+            </View>
           </View>
 
           {/* Botón de Inicio de Sesión */}
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => navigation.navigate('LoginPolicial')}>
+            onPress={() => navigation.navigate('LoginPolicial')}
+            activeOpacity={0.8}>
             <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
           </TouchableOpacity>
         </View>
@@ -95,7 +88,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000000', // Fondo negro
   },
   scrollContent: {
     flexGrow: 1,
@@ -108,62 +101,78 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   flagContainer: {
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  flagImage: {
-    width: 120,
-    height: 80,
-  },
-  titleContainer: {
-    alignItems: 'center',
+    width: 200,
+    height: 120,
     marginBottom: 30,
-  },
-  titleMain: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000000',
-    textAlign: 'center',
-    marginBottom: 5,
-    letterSpacing: 0.5,
-  },
-  acronymContainer: {
-    marginTop: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: '#000000',
     borderRadius: 8,
+    overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#D4AF37',
   },
+  flagStrip: {
+    flex: 1,
+    width: '100%',
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  titleMain: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#FFFFFF', // Texto blanco sobre fondo negro
+    textAlign: 'center',
+    marginBottom: 5,
+    letterSpacing: 1,
+  },
+  acronymContainer: {
+    marginTop: 15,
+    paddingHorizontal: 25,
+    paddingVertical: 12,
+    backgroundColor: '#000000',
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: '#D4AF37', // Dorado
+  },
   acronym: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#D4AF37', // Dorado
-    letterSpacing: 4,
+    letterSpacing: 5,
   },
-  imagesContainer: {
+  iconsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 30,
+    marginBottom: 40,
     paddingHorizontal: 10,
   },
-  imageWrapper: {
-    flex: 1,
+  iconBox: {
+    width: '48%',
     alignItems: 'center',
-    marginHorizontal: 5,
+    padding: 20,
+    marginBottom: 15,
+    borderRadius: 12,
+    borderWidth: 2,
+    backgroundColor: '#1a1a1a',
   },
-  featureImage: {
-    width: '100%',
-    height: 150,
-    maxWidth: 150,
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 10,
+  },
+  iconText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   loginButton: {
     backgroundColor: '#000000',
     paddingHorizontal: 50,
-    paddingVertical: 16,
-    borderRadius: 10,
+    paddingVertical: 18,
+    borderRadius: 12,
     minWidth: 250,
     alignItems: 'center',
     shadowColor: '#D4AF37',
@@ -171,17 +180,17 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-    borderWidth: 2,
-    borderColor: '#D4AF37',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 10,
+    borderWidth: 3,
+    borderColor: '#D4AF37', // Dorado
   },
   loginButtonText: {
-    color: '#D4AF37',
-    fontSize: 18,
+    color: '#D4AF37', // Dorado
+    fontSize: 20,
     fontWeight: 'bold',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
 });
 

@@ -147,7 +147,7 @@ const DashboardScreen: React.FC<Props> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000000', // Fondo negro
   },
   content: {
     flex: 1,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF', // Texto blanco sobre fondo negro
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -167,25 +167,27 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     width: '48%',
-    backgroundColor: '#fff',
+    backgroundColor: '#1a1a1a',
     padding: 30,
     borderRadius: 12,
     marginBottom: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    borderWidth: 2,
+    borderColor: '#D4AF37', // Borde dorado
+    shadowColor: '#D4AF37',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 3.84,
     elevation: 5,
   },
   menuButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#D4AF37', // Texto dorado
   },
   panicContainer: {
     padding: 20,
