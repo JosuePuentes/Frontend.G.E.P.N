@@ -45,6 +45,18 @@ const API_BASE_URL = 'http://tu-servidor:8080';
 
 Para desarrollo local en Android, usa `http://10.0.2.2:8080` en lugar de `localhost`.
 
+### Agregar Imágenes al HomeScreen
+
+El HomeScreen requiere las siguientes imágenes en `src/assets/images/`:
+
+- `bandera-venezuela.png` - Bandera de Venezuela
+- `policias-tacticos.png` - Imagen de policías tácticos
+- `patrullas.png` - Imagen de patrullas policiales
+
+Consulta `src/assets/images/INSTRUCCIONES.md` para más detalles.
+
+**Nota**: Si las imágenes no están disponibles, la app funcionará normalmente pero sin mostrar las imágenes.
+
 ## 📱 Ejecutar la Aplicación
 
 ### Android
