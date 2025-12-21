@@ -9,6 +9,7 @@ import {
   TextInput,
   ScrollView,
   Image,
+  ImageBackground,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -67,6 +68,15 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     escudoPolicia = require('../../assets/images/escudo-policia.png');
   } catch (e) {
     // Si la imagen no existe, escudoPolicia será null
+  }
+
+  // Cargar imagen de fondo
+  let backgroundImage = null;
+  try {
+    backgroundImage = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+  } catch (e) {
+    // Si la imagen no existe, backgroundImage será null
+    console.log('Imagen de fondo no encontrada:', e);
   }
 
   const handleLogin = async () => {
@@ -156,107 +166,221 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header con botón de Iniciar Sesión */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft} />
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>G.E.P.N</Text>
-        </View>
-        <View style={styles.headerRight}>
-          {isAuthenticated ? (
-            <View style={styles.userContainer}>
-              <Text style={styles.userNameText}>{userName}</Text>
+      {backgroundImage ? (
+        <ImageBackground
+          source={backgroundImage}
+          style={styles.backgroundImage}
+          resizeMode="cover">
+          {/* Overlay semi-transparente para mejorar legibilidad */}
+          <View style={styles.overlay} />
+          
+          {/* Header con botón de Iniciar Sesión */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft} />
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>G.E.P.N</Text>
+            </View>
+            <View style={styles.headerRight}>
+              {isAuthenticated ? (
+                <View style={styles.userContainer}>
+                  <Text style={styles.userNameText}>{userName}</Text>
+                  <TouchableOpacity
+                    style={styles.logoutButton}
+                    onPress={handleLogout}
+                    activeOpacity={0.8}>
+                    <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.loginHeaderButton}
+                  onPress={() => setModalVisible(true)}
+                  activeOpacity={0.8}>
+                  <Text style={styles.loginHeaderButtonText}>Iniciar Sesión</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {/* Línea de colores de la bandera */}
+          <View style={styles.flagLineContainer}>
+            <View style={[styles.flagLineStrip, {backgroundColor: amarillo}]} />
+            <View style={[styles.flagLineStrip, {backgroundColor: azul}]} />
+            <View style={[styles.flagLineStrip, {backgroundColor: rojo}]} />
+          </View>
+
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}>
+            {/* Contenido Principal */}
+            <View style={styles.mainContent}>
+              {/* Escudo de la Policía */}
+              {escudoPolicia && (
+                <View style={styles.escudoContainer}>
+                  <Image
+                    source={escudoPolicia}
+                    style={styles.escudoImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
+
+              {/* Título Principal */}
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleMain}>Gestión Estratégica</Text>
+                <Text style={styles.titleMain}>Policial Nacional</Text>
+                <View style={styles.acronymContainer}>
+                  <Text style={styles.acronym}>G.E.P.N</Text>
+                </View>
+              </View>
+
+              {/* Descripción */}
+              <View style={styles.descriptionContainer}>
+                <Text style={styles.descriptionText}>
+                  Sistema de gestión especializado para operaciones policiales nacionales
+                </Text>
+              </View>
+
+              {/* Botón de Realizar Denuncia */}
               <TouchableOpacity
-                style={styles.logoutButton}
-                onPress={handleLogout}
-                activeOpacity={0.8}>
-                <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+                style={styles.denunciaButton}
+                onPress={() => {
+                  console.log('🔘 [HomeScreen] TouchableOpacity onPress ejecutado');
+                  handleDenuncia();
+                }}
+                activeOpacity={0.7}>
+                <View style={styles.denunciaButtonContent}>
+                  <Text style={styles.denunciaIcon}>🚨</Text>
+                  <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
+                </View>
               </TouchableOpacity>
+
+              {/* Información adicional */}
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoTitle}>Servicios Disponibles</Text>
+                <View style={styles.infoList}>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoBullet}>•</Text>
+                    <Text style={styles.infoText}>Registro de denuncias</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoBullet}>•</Text>
+                    <Text style={styles.infoText}>Gestión de operaciones</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoBullet}>•</Text>
+                    <Text style={styles.infoText}>Sistema de alertas</Text>
+                  </View>
+                </View>
+              </View>
             </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.loginHeaderButton}
-              onPress={() => setModalVisible(true)}
-              activeOpacity={0.8}>
-              <Text style={styles.loginHeaderButtonText}>Iniciar Sesión</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* Línea de colores de la bandera */}
-      <View style={styles.flagLineContainer}>
-        <View style={[styles.flagLineStrip, {backgroundColor: amarillo}]} />
-        <View style={[styles.flagLineStrip, {backgroundColor: azul}]} />
-        <View style={[styles.flagLineStrip, {backgroundColor: rojo}]} />
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-        {/* Contenido Principal */}
-        <View style={styles.mainContent}>
-          {/* Escudo de la Policía */}
-          {escudoPolicia && (
-            <View style={styles.escudoContainer}>
-              <Image
-                source={escudoPolicia}
-                style={styles.escudoImage}
-                resizeMode="contain"
-              />
+          </ScrollView>
+        </ImageBackground>
+      ) : (
+        <>
+          {/* Header con botón de Iniciar Sesión */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft} />
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>G.E.P.N</Text>
             </View>
-          )}
-
-          {/* Título Principal */}
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleMain}>Gestión Estratégica</Text>
-            <Text style={styles.titleMain}>Policial Nacional</Text>
-            <View style={styles.acronymContainer}>
-              <Text style={styles.acronym}>G.E.P.N</Text>
+            <View style={styles.headerRight}>
+              {isAuthenticated ? (
+                <View style={styles.userContainer}>
+                  <Text style={styles.userNameText}>{userName}</Text>
+                  <TouchableOpacity
+                    style={styles.logoutButton}
+                    onPress={handleLogout}
+                    activeOpacity={0.8}>
+                    <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.loginHeaderButton}
+                  onPress={() => setModalVisible(true)}
+                  activeOpacity={0.8}>
+                  <Text style={styles.loginHeaderButtonText}>Iniciar Sesión</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
-          {/* Descripción */}
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionText}>
-              Sistema de gestión especializado para operaciones policiales nacionales
-            </Text>
+          {/* Línea de colores de la bandera */}
+          <View style={styles.flagLineContainer}>
+            <View style={[styles.flagLineStrip, {backgroundColor: amarillo}]} />
+            <View style={[styles.flagLineStrip, {backgroundColor: azul}]} />
+            <View style={[styles.flagLineStrip, {backgroundColor: rojo}]} />
           </View>
 
-          {/* Botón de Realizar Denuncia */}
-          <TouchableOpacity
-            style={styles.denunciaButton}
-            onPress={() => {
-              console.log('🔘 [HomeScreen] TouchableOpacity onPress ejecutado');
-              handleDenuncia();
-            }}
-            activeOpacity={0.7}>
-            <View style={styles.denunciaButtonContent}>
-              <Text style={styles.denunciaIcon}>🚨</Text>
-              <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
-            </View>
-          </TouchableOpacity>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}>
+            {/* Contenido Principal */}
+            <View style={styles.mainContent}>
+              {/* Escudo de la Policía */}
+              {escudoPolicia && (
+                <View style={styles.escudoContainer}>
+                  <Image
+                    source={escudoPolicia}
+                    style={styles.escudoImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
 
-          {/* Información adicional */}
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoTitle}>Servicios Disponibles</Text>
-            <View style={styles.infoList}>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoBullet}>•</Text>
-                <Text style={styles.infoText}>Registro de denuncias</Text>
+              {/* Título Principal */}
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleMain}>Gestión Estratégica</Text>
+                <Text style={styles.titleMain}>Policial Nacional</Text>
+                <View style={styles.acronymContainer}>
+                  <Text style={styles.acronym}>G.E.P.N</Text>
+                </View>
               </View>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoBullet}>•</Text>
-                <Text style={styles.infoText}>Gestión de operaciones</Text>
+
+              {/* Descripción */}
+              <View style={styles.descriptionContainer}>
+                <Text style={styles.descriptionText}>
+                  Sistema de gestión especializado para operaciones policiales nacionales
+                </Text>
               </View>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoBullet}>•</Text>
-                <Text style={styles.infoText}>Sistema de alertas</Text>
+
+              {/* Botón de Realizar Denuncia */}
+              <TouchableOpacity
+                style={styles.denunciaButton}
+                onPress={() => {
+                  console.log('🔘 [HomeScreen] TouchableOpacity onPress ejecutado');
+                  handleDenuncia();
+                }}
+                activeOpacity={0.7}>
+                <View style={styles.denunciaButtonContent}>
+                  <Text style={styles.denunciaIcon}>🚨</Text>
+                  <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Información adicional */}
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoTitle}>Servicios Disponibles</Text>
+                <View style={styles.infoList}>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoBullet}>•</Text>
+                    <Text style={styles.infoText}>Registro de denuncias</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoBullet}>•</Text>
+                    <Text style={styles.infoText}>Gestión de operaciones</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoBullet}>•</Text>
+                    <Text style={styles.infoText}>Sistema de alertas</Text>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
-        </View>
-      </ScrollView>
+          </ScrollView>
+        </>
+      )}
 
       {/* Modal de Login/Registro */}
       <Modal
@@ -400,15 +524,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay oscuro para mejorar legibilidad
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: 'rgba(10, 10, 10, 0.9)', // Semi-transparente para ver el fondo
     borderBottomWidth: 1,
     borderBottomColor: '#1a1a1a',
+    zIndex: 10, // Asegurar que esté sobre el fondo
   },
   headerLeft: {
     flex: 1,
@@ -460,6 +598,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 30,
+    zIndex: 1, // Asegurar que el contenido esté sobre el fondo
   },
   escudoContainer: {
     marginBottom: 20,
@@ -488,7 +627,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     paddingHorizontal: 30,
     paddingVertical: 12,
-    backgroundColor: '#000000',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Semi-transparente para ver el fondo
     borderRadius: 12,
     borderWidth: 2,
     borderColor: '#D4AF37',
@@ -546,7 +685,7 @@ const styles = StyleSheet.create({
   infoContainer: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: 'rgba(26, 26, 26, 0.85)', // Semi-transparente para ver el fondo
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
