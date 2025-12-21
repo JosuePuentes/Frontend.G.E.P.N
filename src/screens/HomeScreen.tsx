@@ -63,30 +63,26 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   const dorado = '#D4AF37';
 
   // Intentar cargar el escudo de la policía (opcional)
-  // Busca diferentes nombres posibles para el logo
+  // Usar require estático para que Webpack pueda procesarlo
   let escudoPolicia = null;
-  const posiblesNombres = [
-    'escudo-policia.png',
-    'logo.png',
-    'logo-policia.png',
-    'escudo.png',
-    'GEPN-logo.png',
-    'gepn-logo.png',
-    'Gemini_Generated_Image_5keo7m5keo7m5keo.png', // Logo del usuario
-  ];
-  
-  for (const nombre of posiblesNombres) {
+  try {
+    // Intentar cargar el logo del usuario primero
+    escudoPolicia = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+    console.log('✅ Logo encontrado: Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+  } catch (e) {
+    // Si no existe, intentar otros nombres
     try {
-      escudoPolicia = require(`../../assets/images/${nombre}`);
-      console.log(`✅ Logo encontrado: ${nombre}`);
-      break;
-    } catch (e) {
-      // Continuar buscando
+      escudoPolicia = require('../../assets/images/escudo-policia.png');
+      console.log('✅ Logo encontrado: escudo-policia.png');
+    } catch (e2) {
+      try {
+        escudoPolicia = require('../../assets/images/logo.png');
+        console.log('✅ Logo encontrado: logo.png');
+      } catch (e3) {
+        console.log('⚠️ No se encontró ningún logo en la carpeta de imágenes');
+        console.log('Buscados: Gemini_Generated_Image_5keo7m5keo7m5keo.png, escudo-policia.png, logo.png');
+      }
     }
-  }
-  
-  if (!escudoPolicia) {
-    console.log('⚠️ No se encontró ningún logo en la carpeta de imágenes');
   }
 
   // Cargar imagen de fondo
@@ -625,10 +621,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   escudoImage: {
-    width: 120,
-    height: 120,
-    maxWidth: 150,
-    maxHeight: 150,
+    width: 200,
+    height: 200,
+    maxWidth: 250,
+    maxHeight: 250,
   },
   titleContainer: {
     alignItems: 'center',
