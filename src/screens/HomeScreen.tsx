@@ -261,6 +261,19 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 </View>
               </TouchableOpacity>
 
+              {/* Botón de Acceso Policial */}
+              <TouchableOpacity
+                style={styles.policialButton}
+                onPress={() => {
+                  navigation.navigate('LoginPolicial');
+                }}
+                activeOpacity={0.7}>
+                <View style={styles.policialButtonContent}>
+                  <Text style={styles.policialIcon}>👮</Text>
+                  <Text style={styles.policialButtonText}>Acceso Policial</Text>
+                </View>
+              </TouchableOpacity>
+
               {/* Información adicional */}
               <View style={styles.infoContainer}>
                 <Text style={styles.infoTitle}>Servicios Disponibles</Text>
@@ -362,6 +375,19 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 <View style={styles.denunciaButtonContent}>
                   <Text style={styles.denunciaIcon}>🚨</Text>
                   <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Botón de Acceso Policial */}
+              <TouchableOpacity
+                style={styles.policialButton}
+                onPress={() => {
+                  navigation.navigate('LoginPolicial');
+                }}
+                activeOpacity={0.7}>
+                <View style={styles.policialButtonContent}>
+                  <Text style={styles.policialIcon}>👮</Text>
+                  <Text style={styles.policialButtonText}>Acceso Policial</Text>
                 </View>
               </TouchableOpacity>
 
@@ -848,6 +874,40 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
     fontSize: 12,
     fontWeight: '500',
+  },
+  policialButton: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#00247D',
+    borderRadius: 16,
+    paddingVertical: 25,
+    paddingHorizontal: 30,
+    marginBottom: 20,
+    shadowColor: '#00247D',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 15,
+    borderWidth: 2,
+    borderColor: '#0033A0',
+  },
+  policialButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  policialIcon: {
+    fontSize: 32,
+    marginRight: 15,
+  },
+  policialButtonText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold',
+    letterSpacing: 1.5,
   },
 });
 

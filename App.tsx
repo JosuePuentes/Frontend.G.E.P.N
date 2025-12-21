@@ -1,5 +1,5 @@
 import React from 'react';
-import {Platform} from 'react-native';
+import {Platform, Linking} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -29,6 +29,19 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+// Configuración de deep linking para web
+const linking = {
+  prefixes: Platform.OS === 'web' ? ['/'] : ['gepn://'],
+  config: {
+    screens: {
+      Home: '',
+      LoginPolicial: 'policial',
+      Dashboard: 'dashboard',
+      Denuncia: 'denuncia',
+    },
+  },
+};
+
 const App = () => {
   console.log('🎯 [App.tsx] Componente App renderizándose...');
   
@@ -38,6 +51,7 @@ const App = () => {
       <ErrorBoundary>
         <SafeAreaProvider>
           <NavigationContainer
+            linking={linking}
             onReady={() => {
               console.log('✅ [App.tsx] NavigationContainer listo');
             }}
