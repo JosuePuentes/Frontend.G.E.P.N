@@ -17,12 +17,14 @@ if (Platform.OS === 'web') {
 import HomeScreen from './src/screens/HomeScreen';
 import LoginPolicialScreen from './src/screens/LoginPolicialScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import DenunciaScreen from './src/screens/DenunciaScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 export type RootStackParamList = {
   Home: undefined;
   LoginPolicial: undefined;
   Dashboard: undefined;
+  Denuncia: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -47,9 +49,10 @@ const App = () => {
               screenOptions={{
                 headerShown: false,
               }}>
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="LoginPolicial" component={LoginPolicialScreen} />
-              <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="LoginPolicial" component={LoginPolicialScreen} />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="Denuncia" component={DenunciaScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>

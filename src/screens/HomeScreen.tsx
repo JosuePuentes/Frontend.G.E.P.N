@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,17 @@ import {
   ScrollView,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
+import {
+  registerCiudadano,
+  loginCiudadano,
+  isCiudadanoAuthenticated,
+  getCiudadanoUser,
+  logoutCiudadano,
+} from '../services/authService';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -23,10 +31,29 @@ interface Props {
 const HomeScreen: React.FC<Props> = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // true = login, false = registro
-  const [credencial, setCredencial] = useState('');
-  const [pin, setPin] = useState('');
+  const [cedula, setCedula] = useState('');
+  const [contraseña, setContraseña] = useState('');
   const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Verificar autenticación al cargar
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const auth = await isCiudadanoAuthenticated();
+    setIsAuthenticated(auth);
+    if (auth) {
+      const user = await getCiudadanoUser();
+      if (user) {
+        setUserName(user.nombre);
+      }
+    }
+  };
 
   // Colores de la bandera de Venezuela
   const amarillo = '#FFCC02';
@@ -42,31 +69,77 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     // Si la imagen no existe, escudoPolicia será null
   }
 
-  const handleLogin = () => {
-    if (!credencial.trim() || !pin.trim()) {
+  const handleLogin = async () => {
+    if (!cedula.trim() || !contraseña.trim()) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
-    // Aquí iría la lógica de login
-    setModalVisible(false);
-    navigation.navigate('LoginPolicial');
+
+    setLoading(true);
+    const success = await loginCiudadano(cedula, contraseña);
+    setLoading(false);
+
+    if (success) {
+      Alert.alert('Éxito', 'Sesión iniciada correctamente');
+      setModalVisible(false);
+      setCedula('');
+      setContraseña('');
+      await checkAuth();
+    } else {
+      Alert.alert('Error', 'Cédula o contraseña incorrectos');
+    }
   };
 
-  const handleRegister = () => {
-    if (!nombre.trim() || !apellido.trim() || !credencial.trim() || !pin.trim()) {
+  const handleRegister = async () => {
+    if (!nombre.trim() || !cedula.trim() || !telefono.trim() || !contraseña.trim()) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
-    // Aquí iría la lógica de registro
-    Alert.alert('Éxito', 'Registro completado. Por favor inicia sesión.');
-    setIsLogin(true);
-    setNombre('');
-    setApellido('');
+
+    if (contraseña.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setLoading(true);
+    const success = await registerCiudadano(nombre, cedula, telefono, contraseña);
+    setLoading(false);
+
+    if (success) {
+      Alert.alert('Éxito', 'Registro completado. Sesión iniciada automáticamente.');
+      setModalVisible(false);
+      setNombre('');
+      setCedula('');
+      setTelefono('');
+      setContraseña('');
+      setIsLogin(true);
+      await checkAuth();
+    } else {
+      Alert.alert('Error', 'La cédula ya está registrada');
+    }
   };
 
-  const handleDenuncia = () => {
-    Alert.alert('Realizar Denuncia', 'Funcionalidad de denuncia próximamente disponible');
-    // Aquí se implementará la funcionalidad de denuncia
+  const handleDenuncia = async () => {
+    const auth = await isCiudadanoAuthenticated();
+    if (!auth) {
+      Alert.alert(
+        'Acceso Requerido',
+        'Debes iniciar sesión para realizar una denuncia',
+        [
+          {text: 'Cancelar', style: 'cancel'},
+          {text: 'Iniciar Sesión', onPress: () => setModalVisible(true)},
+        ],
+      );
+      return;
+    }
+    navigation.navigate('Denuncia');
+  };
+
+  const handleLogout = async () => {
+    await logoutCiudadano();
+    setIsAuthenticated(false);
+    setUserName('');
+    Alert.alert('Éxito', 'Sesión cerrada correctamente');
   };
 
   return (
@@ -78,12 +151,24 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
           <Text style={styles.headerTitle}>G.E.P.N</Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.loginHeaderButton}
-            onPress={() => setModalVisible(true)}
-            activeOpacity={0.8}>
-            <Text style={styles.loginHeaderButtonText}>Iniciar Sesión</Text>
-          </TouchableOpacity>
+          {isAuthenticated ? (
+            <View style={styles.userContainer}>
+              <Text style={styles.userNameText}>{userName}</Text>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+                activeOpacity={0.8}>
+                <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.loginHeaderButton}
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.8}>
+              <Text style={styles.loginHeaderButtonText}>Iniciar Sesión</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -175,10 +260,10 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 style={styles.closeButton}
                 onPress={() => {
                   setModalVisible(false);
-                  setCredencial('');
-                  setPin('');
+                  setCedula('');
+                  setContraseña('');
                   setNombre('');
-                  setApellido('');
+                  setTelefono('');
                 }}>
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
@@ -191,7 +276,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 onPress={() => {
                   setIsLogin(true);
                   setNombre('');
-                  setApellido('');
+                  setTelefono('');
                 }}>
                 <Text
                   style={[
@@ -205,8 +290,8 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 style={[styles.tab, !isLogin && styles.tabActive]}
                 onPress={() => {
                   setIsLogin(false);
-                  setCredencial('');
-                  setPin('');
+                  setCedula('');
+                  setContraseña('');
                 }}>
                 <Text
                   style={[
@@ -221,66 +306,71 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
             {/* Formulario */}
             <ScrollView style={styles.formContainer}>
               {!isLogin && (
-                <>
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Nombre</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={nombre}
-                      onChangeText={setNombre}
-                      placeholder="Ingresa tu nombre"
-                      placeholderTextColor="#999"
-                    />
-                  </View>
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Apellido</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={apellido}
-                      onChangeText={setApellido}
-                      placeholder="Ingresa tu apellido"
-                      placeholderTextColor="#999"
-                    />
-                  </View>
-                </>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Nombre Completo</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={nombre}
+                    onChangeText={setNombre}
+                    placeholder="Ingresa tu nombre completo"
+                    placeholderTextColor="#999"
+                    autoCapitalize="words"
+                  />
+                </View>
               )}
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Credencial</Text>
+                <Text style={styles.label}>Cédula</Text>
                 <TextInput
                   style={styles.input}
-                  value={credencial}
-                  onChangeText={setCredencial}
-                  placeholder="Ingresa tu credencial"
+                  value={cedula}
+                  onChangeText={setCedula}
+                  placeholder="Ej: V-12345678"
                   placeholderTextColor="#999"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardType="default"
                 />
               </View>
 
+              {!isLogin && (
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Número de Teléfono</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={telefono}
+                    onChangeText={setTelefono}
+                    placeholder="Ej: 0412-1234567"
+                    placeholderTextColor="#999"
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              )}
+
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>
-                  PIN {isLogin ? '(6 dígitos)' : '(6 dígitos)'}
-                </Text>
+                <Text style={styles.label}>Contraseña</Text>
                 <TextInput
                   style={styles.input}
-                  value={pin}
-                  onChangeText={setPin}
-                  placeholder="000000"
+                  value={contraseña}
+                  onChangeText={setContraseña}
+                  placeholder={isLogin ? 'Ingresa tu contraseña' : 'Mínimo 6 caracteres'}
                   placeholderTextColor="#999"
-                  keyboardType="numeric"
-                  maxLength={6}
                   secureTextEntry
                 />
               </View>
 
               <TouchableOpacity
-                style={styles.submitButton}
+                style={[styles.submitButton, loading && styles.submitButtonDisabled]}
                 onPress={isLogin ? handleLogin : handleRegister}
+                disabled={loading}
                 activeOpacity={0.8}>
-                <Text style={styles.submitButtonText}>
-                  {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
-                </Text>
+                {loading ? (
+                  <ActivityIndicator color="#000000" />
+                ) : (
+                  <Text style={styles.submitButtonText}>
+                    {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
+                  </Text>
+                )}
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -574,6 +664,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  userContainer: {
+    alignItems: 'flex-end',
+  },
+  userNameText: {
+    color: '#D4AF37',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  logoutButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#2a2a2a',
+    borderWidth: 1,
+    borderColor: '#3a3a3a',
+  },
+  logoutButtonText: {
+    color: '#CCCCCC',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 
