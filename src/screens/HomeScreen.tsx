@@ -25,8 +25,9 @@ import {
 
 // Importar imágenes estáticamente para que Webpack las procese
 // Usar require directo - Webpack lo procesará en tiempo de compilación
-const logoImage = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
-const backgroundImageStatic = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+// Desde src/screens/, la ruta correcta es ../assets/images/ (no ../../assets/images/)
+const logoImage = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+const backgroundImageStatic = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
