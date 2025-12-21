@@ -74,6 +74,25 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   const [credencial, setCredencial] = useState('');
   const [rango, setRango] = useState('');
   const [destacado, setDestacado] = useState('');
+  const [fechaGraduacion, setFechaGraduacion] = useState('');
+  const [antiguedad, setAntiguedad] = useState('');
+
+  // Documentos
+  const [licenciaConducir, setLicenciaConducir] = useState('');
+  const [carnetMedico, setCarnetMedico] = useState('');
+
+  // Parientes (información sensible)
+  const [padreNombre, setPadreNombre] = useState('');
+  const [padreCedula, setPadreCedula] = useState('');
+  const [madreNombre, setMadreNombre] = useState('');
+  const [madreCedula, setMadreCedula] = useState('');
+  const [esposaNombre, setEsposaNombre] = useState('');
+  const [esposaCedula, setEsposaCedula] = useState('');
+  const [hijos, setHijos] = useState<Array<{nombre: string; cedula: string; fechaNacimiento: string}>>([]);
+  const [showHijoForm, setShowHijoForm] = useState(false);
+  const [hijoNombre, setHijoNombre] = useState('');
+  const [hijoCedula, setHijoCedula] = useState('');
+  const [hijoFechaNacimiento, setHijoFechaNacimiento] = useState('');
 
   // Ubicación
   const [estado, setEstado] = useState('');
@@ -143,6 +162,8 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       !credencial.trim() ||
       !rango ||
       !destacado.trim() ||
+      !fechaGraduacion.trim() ||
+      !antiguedad.trim() ||
       !estado ||
       !municipio ||
       !parroquia ||
@@ -175,11 +196,31 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         credencial: credencial.trim(),
         rango,
         destacado: destacado.trim(),
+        fechaGraduacion: fechaGraduacion.trim(),
+        antiguedad: parseFloat(antiguedad),
         estado: estadosVenezuela.find(e => e.id === estado)?.nombre || '',
         municipio: municipiosDisponibles.find(m => m.id === municipio)?.nombre || '',
         parroquia,
+        licenciaConducir: licenciaConducir.trim() || null,
+        carnetMedico: carnetMedico.trim() || null,
         fotoCara, // Base64
         fotoCarnet: fotoCarnet || null, // Base64 opcional
+        // Información sensible (NO aparece en QR)
+        parientes: {
+          padre: {
+            nombre: padreNombre.trim() || null,
+            cedula: padreCedula.trim() || null,
+          },
+          madre: {
+            nombre: madreNombre.trim() || null,
+            cedula: madreCedula.trim() || null,
+          },
+          esposa: {
+            nombre: esposaNombre.trim() || null,
+            cedula: esposaCedula.trim() || null,
+          },
+          hijos: hijos.length > 0 ? hijos : null,
+        },
       };
 
       const result = await registrarOficial(datosOficial);
@@ -200,6 +241,17 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setCredencial('');
         setRango('');
         setDestacado('');
+        setFechaGraduacion('');
+        setAntiguedad('');
+        setLicenciaConducir('');
+        setCarnetMedico('');
+        setPadreNombre('');
+        setPadreCedula('');
+        setMadreNombre('');
+        setMadreCedula('');
+        setEsposaNombre('');
+        setEsposaCedula('');
+        setHijos([]);
         setEstado('');
         setMunicipio('');
         setParroquia('');
@@ -445,6 +497,221 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
                 placeholder="Lugar de destacamento"
                 placeholderTextColor="#999"
               />
+            </View>
+
+            <View style={styles.row}>
+              <View style={styles.halfInput}>
+                <Text style={styles.label}>Fecha de Graduación *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={fechaGraduacion}
+                  onChangeText={setFechaGraduacion}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor="#999"
+                />
+              </View>
+              <View style={styles.halfInput}>
+                <Text style={styles.label}>Antigüedad (años) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={antiguedad}
+                  onChangeText={setAntiguedad}
+                  placeholder="Años de servicio"
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Documentos */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Documentos</Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Licencia de Conducir</Text>
+              <TextInput
+                style={styles.input}
+                value={licenciaConducir}
+                onChangeText={setLicenciaConducir}
+                placeholder="Número de licencia"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Carnet Médico</Text>
+              <TextInput
+                style={styles.input}
+                value={carnetMedico}
+                onChangeText={setCarnetMedico}
+                placeholder="Número de carnet médico"
+                placeholderTextColor="#999"
+              />
+            </View>
+          </View>
+
+          {/* Parientes (Información Sensible - NO aparece en QR) */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              Parientes Principales (Confidencial)
+            </Text>
+            <Text style={styles.sectionSubtitle}>
+              Esta información es sensible y no aparecerá en el QR
+            </Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Padre - Nombre</Text>
+              <TextInput
+                style={styles.input}
+                value={padreNombre}
+                onChangeText={setPadreNombre}
+                placeholder="Nombre completo del padre"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Padre - Cédula</Text>
+              <TextInput
+                style={styles.input}
+                value={padreCedula}
+                onChangeText={setPadreCedula}
+                placeholder="Cédula del padre"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Madre - Nombre</Text>
+              <TextInput
+                style={styles.input}
+                value={madreNombre}
+                onChangeText={setMadreNombre}
+                placeholder="Nombre completo de la madre"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Madre - Cédula</Text>
+              <TextInput
+                style={styles.input}
+                value={madreCedula}
+                onChangeText={setMadreCedula}
+                placeholder="Cédula de la madre"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Esposa/Esposo - Nombre</Text>
+              <TextInput
+                style={styles.input}
+                value={esposaNombre}
+                onChangeText={setEsposaNombre}
+                placeholder="Nombre completo"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Esposa/Esposo - Cédula</Text>
+              <TextInput
+                style={styles.input}
+                value={esposaCedula}
+                onChangeText={setEsposaCedula}
+                placeholder="Cédula"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Hijos</Text>
+              {hijos.map((hijo, index) => (
+                <View key={index} style={styles.hijoItem}>
+                  <View style={styles.hijoInfo}>
+                    <Text style={styles.hijoText}>
+                      {hijo.nombre} - {hijo.cedula}
+                    </Text>
+                    <Text style={styles.hijoTextSmall}>
+                      Nacimiento: {hijo.fechaNacimiento}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => {
+                      const nuevosHijos = hijos.filter((_, i) => i !== index);
+                      setHijos(nuevosHijos);
+                    }}>
+                    <Text style={styles.deleteButtonText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {showHijoForm ? (
+                <View style={styles.hijoForm}>
+                  <TextInput
+                    style={styles.input}
+                    value={hijoNombre}
+                    onChangeText={setHijoNombre}
+                    placeholder="Nombre del hijo"
+                    placeholderTextColor="#999"
+                  />
+                  <TextInput
+                    style={[styles.input, {marginTop: 10}]}
+                    value={hijoCedula}
+                    onChangeText={setHijoCedula}
+                    placeholder="Cédula"
+                    placeholderTextColor="#999"
+                  />
+                  <TextInput
+                    style={[styles.input, {marginTop: 10}]}
+                    value={hijoFechaNacimiento}
+                    onChangeText={setHijoFechaNacimiento}
+                    placeholder="Fecha de nacimiento (YYYY-MM-DD)"
+                    placeholderTextColor="#999"
+                  />
+                  <View style={styles.hijoFormButtons}>
+                    <TouchableOpacity
+                      style={styles.addHijoButton}
+                      onPress={() => {
+                        if (hijoNombre.trim() && hijoCedula.trim()) {
+                          setHijos([
+                            ...hijos,
+                            {
+                              nombre: hijoNombre.trim(),
+                              cedula: hijoCedula.trim(),
+                              fechaNacimiento: hijoFechaNacimiento.trim(),
+                            },
+                          ]);
+                          setHijoNombre('');
+                          setHijoCedula('');
+                          setHijoFechaNacimiento('');
+                          setShowHijoForm(false);
+                        }
+                      }}>
+                      <Text style={styles.addHijoButtonText}>Agregar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.cancelHijoButton}
+                      onPress={() => {
+                        setShowHijoForm(false);
+                        setHijoNombre('');
+                        setHijoCedula('');
+                        setHijoFechaNacimiento('');
+                      }}>
+                      <Text style={styles.cancelHijoButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.addHijoButton}
+                  onPress={() => setShowHijoForm(true)}>
+                  <Text style={styles.addHijoButtonText}>+ Agregar Hijo</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -764,6 +1031,93 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#FF6B60',
+    marginBottom: 15,
+    fontStyle: 'italic',
+  },
+  hijoItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  hijoInfo: {
+    flex: 1,
+  },
+  hijoText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  hijoTextSmall: {
+    color: '#CCCCCC',
+    fontSize: 12,
+  },
+  deleteButton: {
+    backgroundColor: '#FF3B30',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  hijoForm: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#D4AF37',
+  },
+  hijoFormButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  addHijoButton: {
+    backgroundColor: '#00247D',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#0033A0',
+  },
+  addHijoButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  cancelHijoButton: {
+    backgroundColor: '#2a2a2a',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3a3a3a',
+  },
+  cancelHijoButtonText: {
+    color: '#CCCCCC',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

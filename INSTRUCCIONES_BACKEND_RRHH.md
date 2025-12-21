@@ -9,6 +9,19 @@ Implementar el sistema de Recursos Humanos para registrar oficiales policiales q
 ### Modelo de Oficial
 
 ```go
+type Pariente struct {
+    Nombre          string `bson:"nombre" json:"nombre"`
+    Cedula          string `bson:"cedula" json:"cedula"`
+    FechaNacimiento string `bson:"fecha_nacimiento,omitempty" json:"fecha_nacimiento,omitempty"` // Para hijos
+}
+
+type Parientes struct {
+    Padre  *Pariente   `bson:"padre,omitempty" json:"padre,omitempty"`
+    Madre  *Pariente   `bson:"madre,omitempty" json:"madre,omitempty"`
+    Esposa *Pariente   `bson:"esposa,omitempty" json:"esposa,omitempty"`
+    Hijos  []Pariente  `bson:"hijos,omitempty" json:"hijos,omitempty"`
+}
+
 type Oficial struct {
     ID                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
     PrimerNombre      string             `bson:"primer_nombre" json:"primer_nombre"`
@@ -25,14 +38,20 @@ type Oficial struct {
     Credencial        string             `bson:"credencial" json:"credencial"` // Único
     Rango             string             `bson:"rango" json:"rango"`
     Destacado         string             `bson:"destacado" json:"destacado"`
+    FechaGraduacion   string             `bson:"fecha_graduacion" json:"fecha_graduacion"` // YYYY-MM-DD
+    Antiguedad        float64            `bson:"antiguedad" json:"antiguedad"` // Años de servicio
     Estado            string             `bson:"estado" json:"estado"`
     Municipio         string             `bson:"municipio" json:"municipio"`
     Parroquia         string             `bson:"parroquia" json:"parroquia"`
+    LicenciaConducir  string             `bson:"licencia_conducir,omitempty" json:"licencia_conducir,omitempty"`
+    CarnetMedico      string             `bson:"carnet_medico,omitempty" json:"carnet_medico,omitempty"`
     FotoCara          string             `bson:"foto_cara" json:"foto_cara"` // Base64 o URL
-    FotoCarnet        string             `bson:"foto_carnet" json:"foto_carnet,omitempty"` // Base64 o URL, opcional
+    FotoCarnet        string             `bson:"foto_carnet,omitempty" json:"foto_carnet,omitempty"` // Base64 o URL, opcional
     QRCode            string             `bson:"qr_code" json:"qr_code,omitempty"` // Código QR generado
     FechaRegistro     time.Time          `bson:"fecha_registro" json:"fecha_registro"`
     Activo            bool               `bson:"activo" json:"activo"`
+    // Información sensible - NO aparece en QR
+    Parientes         *Parientes         `bson:"parientes,omitempty" json:"parientes,omitempty"`
 }
 ```
 
@@ -76,11 +95,36 @@ Registra un nuevo oficial en el sistema.
   "credencial": "POL-12345",
   "rango": "Comisario",
   "destacado": "Comando Regional #1",
+  "fecha_graduacion": "2015-06-15",
+  "antiguedad": 8.5,
   "estado": "Distrito Capital",
   "municipio": "Libertador",
   "parroquia": "Catedral",
+  "licencia_conducir": "12345678",
+  "carnet_medico": "CM-98765",
   "foto_cara": "data:image/png;base64,iVBORw0KGgoAAAANS...", // Base64
-  "foto_carnet": "data:image/png;base64,iVBORw0KGgoAAAANS..." // Base64 opcional
+  "foto_carnet": "data:image/png;base64,iVBORw0KGgoAAAANS...", // Base64 opcional
+  "parientes": {
+    "padre": {
+      "nombre": "Juan Pérez",
+      "cedula": "V-11111111"
+    },
+    "madre": {
+      "nombre": "María González",
+      "cedula": "V-22222222"
+    },
+    "esposa": {
+      "nombre": "Ana López",
+      "cedula": "V-33333333"
+    },
+    "hijos": [
+      {
+        "nombre": "Pedro Pérez López",
+        "cedula": "V-44444444",
+        "fecha_nacimiento": "2018-03-20"
+      }
+    ]
+  }
 }
 ```
 
@@ -113,6 +157,9 @@ Registra un nuevo oficial en el sistema.
 - ✅ Rango debe ser uno de los válidos
 - ✅ Foto de cara es obligatoria
 - ✅ Fecha de nacimiento formato YYYY-MM-DD
+- ✅ Fecha de graduación formato YYYY-MM-DD
+- ✅ Antigüedad debe ser un número positivo
+- ✅ Calcular antigüedad automáticamente desde fecha de graduación si no se proporciona
 
 ### 2. GET `/api/rrhh/generar-qr/:oficialId`
 
@@ -128,7 +175,8 @@ Genera o obtiene el código QR del oficial.
 ```
 
 **Datos del QR:**
-El QR debe contener un JSON con la información del oficial:
+El QR debe contener un JSON con la información del oficial. **IMPORTANTE**: NO incluir información sensible (parientes, licencia de conducir, carnet médico, contraseña).
+
 ```json
 {
   "id": "507f1f77bcf86cd799439011",
@@ -138,9 +186,18 @@ El QR debe contener un JSON con la información del oficial:
   "foto_cara": "data:image/png;base64,...",
   "foto_carnet": "data:image/png;base64,...",
   "destacado": "Comando Regional #1",
+  "antiguedad": 8.5,
+  "fecha_graduacion": "2015-06-15",
   "fecha_registro": "2024-01-15T10:30:00Z"
 }
 ```
+
+**Campos que NO deben aparecer en el QR:**
+- ❌ Parientes (padre, madre, esposa, hijos)
+- ❌ Licencia de conducir
+- ❌ Carnet médico
+- ❌ Contraseña
+- ❌ Cédula completa (solo últimos 4 dígitos si es necesario)
 
 ### 3. GET `/api/rrhh/oficial/:credencial`
 
@@ -253,7 +310,7 @@ oficial.FotoCara = "/uploads/oficiales/POL-12345_cara.png"
 ```go
 import "github.com/skip2/go-qrcode"
 
-// Generar QR con información del oficial
+// Generar QR con información del oficial (SIN información sensible)
 datosQR := map[string]interface{}{
     "id": oficial.ID.Hex(),
     "credencial": oficial.Credencial,
@@ -262,7 +319,10 @@ datosQR := map[string]interface{}{
     "foto_cara": oficial.FotoCara,
     "foto_carnet": oficial.FotoCarnet,
     "destacado": oficial.Destacado,
+    "antiguedad": oficial.Antiguedad,
+    "fecha_graduacion": oficial.FechaGraduacion,
     "fecha_registro": oficial.FechaRegistro.Format(time.RFC3339),
+    // NO incluir: parientes, licencia_conducir, carnet_medico, contraseña
 }
 
 jsonData, _ := json.Marshal(datosQR)
@@ -276,6 +336,45 @@ png, _ := qrcode.Encode(string(jsonData), qrcode.Medium, 256)
 qrBase64 := base64.StdEncoding.EncodeToString(png)
 oficial.QRCode = "data:image/png;base64," + qrBase64
 ```
+
+## 📈 Sistema de Ascensos Automáticos
+
+Cada 4 años de servicio, el oficial tiene derecho a ascender al siguiente rango. El backend debe:
+
+1. **Calcular antigüedad automáticamente** al registrar:
+   ```go
+   fechaGraduacion, _ := time.Parse("2006-01-02", oficial.FechaGraduacion)
+   antiguedad := time.Since(fechaGraduacion).Hours() / 24 / 365.25
+   oficial.Antiguedad = antiguedad
+   ```
+
+2. **Verificar ascensos pendientes** al iniciar sesión o mediante endpoint:
+   ```go
+   func VerificarAscenso(oficial *Oficial) {
+       añosCompletos := int(oficial.Antiguedad)
+       ascensosDebidos := añosCompletos / 4
+       
+       // Obtener índice del rango actual
+       rangoActual := obtenerIndiceRango(oficial.Rango)
+       rangoEsperado := rangoActual + ascensosDebidos
+       
+       if rangoEsperado > rangoActual {
+           // Notificar que hay ascenso pendiente
+           // El ascenso debe ser aprobado manualmente por RRHH
+       }
+   }
+   ```
+
+3. **Endpoint para listar ascensos pendientes**:
+   ```
+   GET /api/rrhh/ascensos-pendientes
+   ```
+
+4. **Endpoint para aprobar ascenso**:
+   ```
+   POST /api/rrhh/aprobar-ascenso/:oficialId
+   Body: { "nuevo_rango": "Comisario" }
+   ```
 
 ## 📱 Endpoint para Escanear QR
 
