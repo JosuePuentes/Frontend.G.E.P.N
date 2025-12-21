@@ -38,6 +38,7 @@ try {
     } catch (e3) {
       // No hay logo disponible
     }
+  }
 }
 
 try {
