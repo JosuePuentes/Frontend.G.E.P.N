@@ -225,13 +225,13 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
           {/* Botón de Realizar Denuncia */}
           <TouchableOpacity
             style={styles.denunciaButton}
-            onPress={() => {
-              console.log('🔘 [HomeScreen] Botón presionado directamente');
-              handleDenuncia();
-            }}
+            onPress={handleDenuncia}
+            onPressIn={() => console.log('🔘 [HomeScreen] onPressIn disparado')}
+            onPressOut={() => console.log('🔘 [HomeScreen] onPressOut disparado')}
             activeOpacity={0.8}
-            disabled={false}>
-            <View style={styles.denunciaButtonContent}>
+            disabled={false}
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+            <View style={styles.denunciaButtonContent} pointerEvents="none">
               <Text style={styles.denunciaIcon}>🚨</Text>
               <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
             </View>
