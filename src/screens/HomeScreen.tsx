@@ -6,6 +6,7 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  Image,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
@@ -23,6 +24,14 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   const rojo = '#CF142B'; // Rojo
   const dorado = '#D4AF37'; // Dorado
 
+  // Intentar cargar el escudo de la policía (opcional)
+  let escudoPolicia = null;
+  try {
+    escudoPolicia = require('../../assets/images/escudo-policia.png');
+  } catch (e) {
+    // Si la imagen no existe, escudoPolicia será null
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -35,6 +44,17 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
             <View style={[styles.flagLineStrip, {backgroundColor: azul}]} />
             <View style={[styles.flagLineStrip, {backgroundColor: rojo}]} />
           </View>
+
+          {/* Escudo de la Policía */}
+          {escudoPolicia && (
+            <View style={styles.escudoContainer}>
+              <Image
+                source={escudoPolicia}
+                style={styles.escudoImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
 
           {/* Título Principal */}
           <View style={styles.titleContainer}>
@@ -111,6 +131,17 @@ const styles = StyleSheet.create({
   flagLineStrip: {
     flex: 1,
     height: '100%',
+  },
+  escudoContainer: {
+    marginBottom: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  escudoImage: {
+    width: 150,
+    height: 150,
+    maxWidth: 200,
+    maxHeight: 200,
   },
   titleContainer: {
     alignItems: 'center',
