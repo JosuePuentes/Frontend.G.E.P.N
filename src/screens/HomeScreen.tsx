@@ -23,6 +23,29 @@ import {
   logoutCiudadano,
 } from '../services/authService';
 
+// Importar imágenes estáticamente para que Webpack las procese
+let logoImage: any = null;
+let backgroundImageStatic: any = null;
+
+try {
+  logoImage = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+} catch (e) {
+  try {
+    logoImage = require('../../assets/images/escudo-policia.png');
+  } catch (e2) {
+    try {
+      logoImage = require('../../assets/images/logo.png');
+    } catch (e3) {
+      // No hay logo disponible
+    }
+}
+
+try {
+  backgroundImageStatic = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+} catch (e) {
+  // No hay imagen de fondo disponible
+}
+
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 interface Props {
@@ -62,36 +85,21 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   const rojo = '#CF142B';
   const dorado = '#D4AF37';
 
-  // Intentar cargar el escudo de la policía (opcional)
-  // Usar require estático para que Webpack pueda procesarlo
-  let escudoPolicia = null;
-  try {
-    // Intentar cargar el logo del usuario primero
-    escudoPolicia = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
-    console.log('✅ Logo encontrado: Gemini_Generated_Image_5keo7m5keo7m5keo.png');
-  } catch (e) {
-    // Si no existe, intentar otros nombres
-    try {
-      escudoPolicia = require('../../assets/images/escudo-policia.png');
-      console.log('✅ Logo encontrado: escudo-policia.png');
-    } catch (e2) {
-      try {
-        escudoPolicia = require('../../assets/images/logo.png');
-        console.log('✅ Logo encontrado: logo.png');
-      } catch (e3) {
-        console.log('⚠️ No se encontró ningún logo en la carpeta de imágenes');
-        console.log('Buscados: Gemini_Generated_Image_5keo7m5keo7m5keo.png, escudo-policia.png, logo.png');
-      }
-    }
+  // Usar las imágenes importadas estáticamente
+  const escudoPolicia = logoImage;
+  const backgroundImage = backgroundImageStatic;
+
+  // Logs para debugging
+  if (escudoPolicia) {
+    console.log('✅ Logo cargado correctamente');
+  } else {
+    console.log('⚠️ No se encontró ningún logo');
   }
 
-  // Cargar imagen de fondo
-  let backgroundImage = null;
-  try {
-    backgroundImage = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
-  } catch (e) {
-    // Si la imagen no existe, backgroundImage será null
-    console.log('Imagen de fondo no encontrada:', e);
+  if (backgroundImage) {
+    console.log('✅ Imagen de fondo cargada correctamente');
+  } else {
+    console.log('⚠️ No se encontró imagen de fondo');
   }
 
   const handleLogin = async () => {
@@ -224,9 +232,9 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
             <View style={[styles.flagLineStrip, {backgroundColor: rojo}]} />
           </View>
 
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
             {/* Contenido Principal */}
             <View style={styles.mainContent}>
               {/* Escudo de la Policía */}
@@ -333,32 +341,32 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
             showsVerticalScrollIndicator={false}>
             {/* Contenido Principal */}
             <View style={styles.mainContent}>
-              {/* Escudo de la Policía */}
-              {escudoPolicia && (
-                <View style={styles.escudoContainer}>
-                  <Image
-                    source={escudoPolicia}
-                    style={styles.escudoImage}
-                    resizeMode="contain"
-                  />
-                </View>
-              )}
+          {/* Escudo de la Policía */}
+          {escudoPolicia && (
+            <View style={styles.escudoContainer}>
+              <Image
+                source={escudoPolicia}
+                style={styles.escudoImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
 
-              {/* Título Principal */}
-              <View style={styles.titleContainer}>
+          {/* Título Principal */}
+          <View style={styles.titleContainer}>
                 <Text style={styles.titleMain}>Gestión Estratégica</Text>
-                <Text style={styles.titleMain}>Policial Nacional</Text>
-                <View style={styles.acronymContainer}>
-                  <Text style={styles.acronym}>G.E.P.N</Text>
-                </View>
-              </View>
+            <Text style={styles.titleMain}>Policial Nacional</Text>
+            <View style={styles.acronymContainer}>
+              <Text style={styles.acronym}>G.E.P.N</Text>
+            </View>
+          </View>
 
               {/* Descripción */}
               <View style={styles.descriptionContainer}>
                 <Text style={styles.descriptionText}>
                   Sistema de gestión especializado para operaciones policiales nacionales
-                </Text>
-              </View>
+              </Text>
+            </View>
 
               {/* Botón de Realizar Denuncia */}
               <TouchableOpacity
@@ -453,7 +461,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                     !isLogin && styles.tabTextActive,
                   ]}>
                   Registrarse
-                </Text>
+              </Text>
               </TouchableOpacity>
             </View>
 
@@ -511,13 +519,13 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                   placeholderTextColor="#999"
                   secureTextEntry
                 />
-              </View>
+          </View>
 
-              <TouchableOpacity
+          <TouchableOpacity
                 style={[styles.submitButton, loading && styles.submitButtonDisabled]}
                 onPress={isLogin ? handleLogin : handleRegister}
                 disabled={loading}
-                activeOpacity={0.8}>
+            activeOpacity={0.8}>
                 {loading ? (
                   <ActivityIndicator color="#000000" />
                 ) : (
@@ -525,7 +533,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                     {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
                   </Text>
                 )}
-              </TouchableOpacity>
+          </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
