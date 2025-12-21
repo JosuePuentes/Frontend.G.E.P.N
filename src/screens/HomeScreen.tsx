@@ -24,28 +24,9 @@ import {
 } from '../services/authService';
 
 // Importar imágenes estáticamente para que Webpack las procese
-let logoImage: any = null;
-let backgroundImageStatic: any = null;
-
-try {
-  logoImage = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
-} catch (e) {
-  try {
-    logoImage = require('../../assets/images/escudo-policia.png');
-  } catch (e2) {
-    try {
-      logoImage = require('../../assets/images/logo.png');
-    } catch (e3) {
-      // No hay logo disponible
-    }
-  }
-}
-
-try {
-  backgroundImageStatic = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
-} catch (e) {
-  // No hay imagen de fondo disponible
-}
+// Usar require directo - Webpack lo procesará en tiempo de compilación
+const logoImage = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
+const backgroundImageStatic = require('../../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
