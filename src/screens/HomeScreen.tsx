@@ -197,7 +197,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
 
           {/* Título Principal */}
           <View style={styles.titleContainer}>
-            <Text style={styles.titleMain}>Gestión Especial</Text>
+            <Text style={styles.titleMain}>Gestión Estratégica</Text>
             <Text style={styles.titleMain}>Policial Nacional</Text>
             <View style={styles.acronymContainer}>
               <Text style={styles.acronym}>G.E.P.N</Text>

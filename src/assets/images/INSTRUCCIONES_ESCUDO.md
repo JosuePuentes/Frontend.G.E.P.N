@@ -31,5 +31,5 @@ El archivo debe llamarse exactamente:
 El escudo se mostrará:
 - En la parte superior del HomeScreen
 - Debajo de la línea de colores de la bandera
-- Arriba del título "Gestión Especial Policial Nacional"
+- Arriba del título "Gestión Estratégica Policial Nacional"
 
