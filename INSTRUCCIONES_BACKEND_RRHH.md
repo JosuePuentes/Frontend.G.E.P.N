@@ -281,11 +281,19 @@ oficial.QRCode = "data:image/png;base64," + qrBase64
 
 ### GET `/api/rrhh/verificar-qr/:qrData`
 
-Cuando se escanea el QR, el frontend enviará los datos decodificados.
+Cuando se escanea el QR, el frontend enviará los datos decodificados. El QR puede contener:
+- El ID del oficial
+- La credencial del oficial
+- Un JSON con los datos del oficial
 
 **Request:**
 ```
 GET /api/rrhh/verificar-qr/POL-12345
+```
+
+O si el QR contiene JSON:
+```
+GET /api/rrhh/verificar-qr/{"id":"507f1f77bcf86cd799439011","credencial":"POL-12345"}
 ```
 
 **Response Success (200):**
@@ -293,17 +301,36 @@ GET /api/rrhh/verificar-qr/POL-12345
 {
   "success": true,
   "data": {
-    "oficial": {
-      "credencial": "POL-12345",
-      "nombre_completo": "Juan Carlos Pérez González",
-      "rango": "Comisario",
-      "foto_cara": "data:image/png;base64,...",
-      "foto_carnet": "data:image/png;base64,...",
-      "destacado": "Comando Regional #1",
-      "activo": true
-    },
-    "valido": true
+    "credencial": "POL-12345",
+    "primer_nombre": "Juan",
+    "segundo_nombre": "Carlos",
+    "primer_apellido": "Pérez",
+    "segundo_apellido": "González",
+    "nombre_completo": "Juan Carlos Pérez González",
+    "cedula": "V-12345678",
+    "fecha_nacimiento": "1990-05-15",
+    "estatura": 175.5,
+    "color_piel": "Mestizo",
+    "tipo_sangre": "O+",
+    "ciudad_nacimiento": "Caracas",
+    "rango": "Comisario",
+    "destacado": "Comando Regional #1",
+    "estado": "Distrito Capital",
+    "municipio": "Libertador",
+    "parroquia": "Catedral",
+    "foto_cara": "data:image/png;base64,...",
+    "foto_carnet": "data:image/png;base64,...",
+    "fecha_registro": "2024-01-15T10:30:00Z",
+    "activo": true
   }
+}
+```
+
+**Response Error (404):**
+```json
+{
+  "success": false,
+  "message": "Oficial no encontrado"
 }
 ```
 

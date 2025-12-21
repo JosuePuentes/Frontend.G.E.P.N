@@ -218,6 +218,13 @@ const DashboardScreen: React.FC<Props> = ({navigation}) => {
             <Text style={styles.menuButtonIcon}>👤</Text>
             <Text style={styles.menuButtonText}>Registro de Detenidos</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => navigation.navigate('QRScanner')}>
+            <Text style={styles.menuButtonIcon}>📱</Text>
+            <Text style={styles.menuButtonText}>Escanear QR</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
