@@ -465,25 +465,30 @@ db.oficiales.createIndex({ "estado": 1 })
 ```go
 func RegistrarOficial(c *gin.Context) {
     var datos struct {
-        PrimerNombre     string `json:"primer_nombre" binding:"required"`
-        SegundoNombre    string `json:"segundo_nombre"`
-        PrimerApellido   string `json:"primer_apellido" binding:"required"`
-        SegundoApellido  string `json:"segundo_apellido"`
-        Cedula           string `json:"cedula" binding:"required"`
-        Contraseña       string `json:"contraseña" binding:"required,min=6"`
-        FechaNacimiento  string `json:"fecha_nacimiento" binding:"required"`
-        Estatura         float64 `json:"estatura" binding:"required"`
-        ColorPiel        string `json:"color_piel" binding:"required"`
-        TipoSangre      string `json:"tipo_sangre" binding:"required"`
-        CiudadNacimiento string `json:"ciudad_nacimiento" binding:"required"`
-        Credencial       string `json:"credencial" binding:"required"`
-        Rango           string `json:"rango" binding:"required"`
-        Destacado       string `json:"destacado" binding:"required"`
-        Estado          string `json:"estado" binding:"required"`
-        Municipio       string `json:"municipio" binding:"required"`
-        Parroquia       string `json:"parroquia" binding:"required"`
-        FotoCara        string `json:"foto_cara" binding:"required"`
-        FotoCarnet      string `json:"foto_carnet"`
+        PrimerNombre     string      `json:"primer_nombre" binding:"required"`
+        SegundoNombre    string      `json:"segundo_nombre"`
+        PrimerApellido   string      `json:"primer_apellido" binding:"required"`
+        SegundoApellido  string      `json:"segundo_apellido"`
+        Cedula           string      `json:"cedula" binding:"required"`
+        Contraseña       string      `json:"contraseña" binding:"required,min=6"`
+        FechaNacimiento  string      `json:"fecha_nacimiento" binding:"required"`
+        Estatura         float64      `json:"estatura" binding:"required"`
+        ColorPiel        string      `json:"color_piel" binding:"required"`
+        TipoSangre       string      `json:"tipo_sangre" binding:"required"`
+        CiudadNacimiento string      `json:"ciudad_nacimiento" binding:"required"`
+        Credencial       string      `json:"credencial" binding:"required"`
+        Rango            string      `json:"rango" binding:"required"`
+        Destacado        string      `json:"destacado" binding:"required"`
+        FechaGraduacion  string      `json:"fecha_graduacion" binding:"required"`
+        Antiguedad       float64     `json:"antiguedad" binding:"required"`
+        Estado           string      `json:"estado" binding:"required"`
+        Municipio        string      `json:"municipio" binding:"required"`
+        Parroquia        string      `json:"parroquia" binding:"required"`
+        LicenciaConducir string      `json:"licencia_conducir"`
+        CarnetMedico     string      `json:"carnet_medico"`
+        FotoCara         string      `json:"foto_cara" binding:"required"`
+        FotoCarnet       string      `json:"foto_carnet"`
+        Parientes        *Parientes  `json:"parientes"`
     }
 
     if err := c.ShouldBindJSON(&datos); err != nil {
@@ -511,29 +516,41 @@ func RegistrarOficial(c *gin.Context) {
     // Hash de contraseña
     hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(datos.Contraseña), 10)
 
+    // Calcular antigüedad si no se proporciona
+    antiguedad := datos.Antiguedad
+    if antiguedad == 0 {
+        fechaGraduacion, _ := time.Parse("2006-01-02", datos.FechaGraduacion)
+        antiguedad = time.Since(fechaGraduacion).Hours() / 24 / 365.25
+    }
+
     // Crear oficial
     oficial := models.Oficial{
-        PrimerNombre:    datos.PrimerNombre,
-        SegundoNombre:   datos.SegundoNombre,
-        PrimerApellido:  datos.PrimerApellido,
-        SegundoApellido: datos.SegundoApellido,
-        Cedula:          datos.Cedula,
-        Contraseña:      string(hashedPassword),
-        FechaNacimiento: datos.FechaNacimiento,
-        Estatura:        datos.Estatura,
-        ColorPiel:       datos.ColorPiel,
-        TipoSangre:      datos.TipoSangre,
+        PrimerNombre:     datos.PrimerNombre,
+        SegundoNombre:    datos.SegundoNombre,
+        PrimerApellido:   datos.PrimerApellido,
+        SegundoApellido:  datos.SegundoApellido,
+        Cedula:           datos.Cedula,
+        Contraseña:       string(hashedPassword),
+        FechaNacimiento:  datos.FechaNacimiento,
+        Estatura:         datos.Estatura,
+        ColorPiel:        datos.ColorPiel,
+        TipoSangre:       datos.TipoSangre,
         CiudadNacimiento: datos.CiudadNacimiento,
-        Credencial:      datos.Credencial,
-        Rango:           datos.Rango,
-        Destacado:       datos.Destacado,
-        Estado:          datos.Estado,
-        Municipio:       datos.Municipio,
-        Parroquia:       datos.Parroquia,
-        FotoCara:        datos.FotoCara,
-        FotoCarnet:      datos.FotoCarnet,
-        FechaRegistro:   time.Now(),
-        Activo:          true,
+        Credencial:       datos.Credencial,
+        Rango:            datos.Rango,
+        Destacado:        datos.Destacado,
+        FechaGraduacion:  datos.FechaGraduacion,
+        Antiguedad:       antiguedad,
+        Estado:           datos.Estado,
+        Municipio:        datos.Municipio,
+        Parroquia:        datos.Parroquia,
+        LicenciaConducir: datos.LicenciaConducir,
+        CarnetMedico:     datos.CarnetMedico,
+        FotoCara:         datos.FotoCara,
+        FotoCarnet:       datos.FotoCarnet,
+        Parientes:        datos.Parientes,
+        FechaRegistro:    time.Now(),
+        Activo:           true,
     }
 
     // Generar QR
@@ -561,11 +578,15 @@ func RegistrarOficial(c *gin.Context) {
 - [ ] Crear handler `GenerarQROficial` en `handlers/rrhh.go`
 - [ ] Crear handler `VerificarQR` en `handlers/rrhh.go`
 - [ ] Crear handler `ListarOficiales` en `handlers/rrhh.go`
+- [ ] Crear handler `VerificarAscenso` en `handlers/rrhh.go`
+- [ ] Crear handler `AprobarAscenso` en `handlers/rrhh.go`
 - [ ] Agregar rutas en `routes/routes.go`:
   - `POST /api/rrhh/registrar-oficial`
   - `GET /api/rrhh/generar-qr/:oficialId`
   - `GET /api/rrhh/verificar-qr/:qrData`
   - `GET /api/rrhh/listar-oficiales`
+  - `GET /api/rrhh/ascensos-pendientes`
+  - `POST /api/rrhh/aprobar-ascenso/:oficialId`
 - [ ] Modificar `LoginPolicial` para usar credenciales de oficiales
 - [ ] Crear índices en MongoDB
 - [ ] Instalar librería de QR: `go get github.com/skip2/go-qrcode`
