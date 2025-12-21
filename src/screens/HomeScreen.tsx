@@ -18,6 +18,8 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({navigation}) => {
+  console.log('🏠 [HomeScreen] Componente renderizándose...');
+  
   // Colores de la bandera de Venezuela
   const amarillo = '#FFCC02'; // Amarillo
   const azul = '#00247D'; // Azul
@@ -28,10 +30,13 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   let escudoPolicia = null;
   try {
     escudoPolicia = require('../../assets/images/escudo-policia.png');
+    console.log('🛡️ [HomeScreen] Escudo cargado');
   } catch (e) {
+    console.log('⚠️ [HomeScreen] Escudo no encontrado (esto es normal)');
     // Si la imagen no existe, escudoPolicia será null
   }
 
+  console.log('🎨 [HomeScreen] Retornando JSX...');
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView

@@ -28,23 +28,37 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
-  return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Home"
-            screenOptions={{
-              headerShown: false,
+  console.log('🎯 [App.tsx] Componente App renderizándose...');
+  
+  try {
+    console.log('🎯 [App.tsx] Creando ErrorBoundary...');
+    return (
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <NavigationContainer
+            onReady={() => {
+              console.log('✅ [App.tsx] NavigationContainer listo');
+            }}
+            onStateChange={() => {
+              console.log('🔄 [App.tsx] Estado de navegación cambió');
             }}>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="LoginPolicial" component={LoginPolicialScreen} />
-            <Stack.Screen name="Dashboard" component={DashboardScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaProvider>
-    </ErrorBoundary>
-  );
+            <Stack.Navigator
+              initialRouteName="Home"
+              screenOptions={{
+                headerShown: false,
+              }}>
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="LoginPolicial" component={LoginPolicialScreen} />
+              <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    );
+  } catch (error) {
+    console.error('❌ [App.tsx] Error en render:', error);
+    throw error;
+  }
 };
 
 export default App;
