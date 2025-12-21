@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  ImageBackground,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
@@ -34,6 +35,9 @@ if (Platform.OS === 'web') {
 } else {
   Geolocation = require('@react-native-community/geolocation').default;
 }
+
+// Importar imagen de fondo (misma que HomeScreen)
+const backgroundImageStatic = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
 
 type LoginPolicialScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -68,67 +72,90 @@ const LoginPolicialScreen: React.FC<Props> = ({navigation}) => {
       if (!hasPermission) {
         Alert.alert(
           'Permisos requeridos',
-          'Se necesitan permisos de ubicación para continuar',
+          'Se necesitan permisos de ubicación para iniciar guardia',
         );
         setLoading(false);
         return;
       }
 
-      // Realizar login
-      const success = await loginPolicial(credencial, pin);
-      if (success) {
-        navigation.replace('Dashboard');
-      } else {
-        Alert.alert('Error', 'Credenciales incorrectas');
-      }
+      // Obtener ubicación GPS
+      Geolocation.getCurrentPosition(
+        async position => {
+          const {latitude, longitude} = position.coords;
+          
+          // Realizar login con GPS
+          const result = await loginPolicial(credencial, pin, latitude, longitude);
+          if (result.success) {
+            Alert.alert('Éxito', 'Guardia iniciada correctamente');
+            navigation.replace('Dashboard');
+          } else {
+            Alert.alert('Error', 'Credenciales incorrectas');
+          }
+          setLoading(false);
+        },
+        error => {
+          Alert.alert('Error', 'No se pudo obtener la ubicación. Intenta nuevamente.');
+          setLoading(false);
+        },
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      );
     } catch (error) {
       Alert.alert('Error', 'Error al iniciar sesión. Intenta nuevamente.');
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Login Policial</Text>
+      <ImageBackground
+        source={backgroundImageStatic}
+        style={styles.backgroundImage}
+        resizeMode="cover">
+        {/* Overlay semi-transparente para mejorar legibilidad */}
+        <View style={styles.overlay} />
+        
+        <View style={styles.content}>
+          <Text style={styles.title}>Login Policial</Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Credencial</Text>
-          <TextInput
-            style={styles.input}
-            value={credencial}
-            onChangeText={setCredencial}
-            placeholder="Ingresa tu credencial"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Credencial</Text>
+            <TextInput
+              style={styles.input}
+              value={credencial}
+              onChangeText={setCredencial}
+              placeholder="Ingresa tu credencial"
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>PIN (6 dígitos)</Text>
+            <TextInput
+              style={styles.input}
+              value={pin}
+              onChangeText={setPin}
+              placeholder="000000"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              maxLength={6}
+              secureTextEntry
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+            onPress={handleLogin}
+            disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+            )}
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>PIN (6 dígitos)</Text>
-          <TextInput
-            style={styles.input}
-            value={pin}
-            onChangeText={setPin}
-            placeholder="000000"
-            keyboardType="numeric"
-            maxLength={6}
-            secureTextEntry
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -136,43 +163,74 @@ const LoginPolicialScreen: React.FC<Props> = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000000',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay oscuro para mejorar legibilidad
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+    zIndex: 1, // Asegurar que el contenido esté sobre el fondo
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 40,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: 0, height: 2},
+    textShadowRadius: 4,
   },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 8,
     fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 3,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#D4AF37',
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
+    color: '#000000',
   },
   loginButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#00247D',
     paddingVertical: 15,
     borderRadius: 8,
     marginTop: 20,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#0033A0',
+    shadowColor: '#00247D',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   loginButtonDisabled: {
     opacity: 0.6,
