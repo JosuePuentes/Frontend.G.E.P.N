@@ -120,29 +120,30 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   };
 
   const handleDenuncia = async () => {
-    console.log('🚨 [HomeScreen] Botón de denuncia presionado');
+    console.log('🚨 [HomeScreen] handleDenuncia llamado');
+    
+    // Verificar autenticación
+    const auth = await isCiudadanoAuthenticated();
+    console.log('🔐 [HomeScreen] Estado de autenticación:', auth);
+    
+    if (!auth) {
+      console.log('⚠️ [HomeScreen] Usuario no autenticado, abriendo modal');
+      // Abrir modal de login/registro directamente
+      setModalVisible(true);
+      Alert.alert(
+        'Acceso Requerido',
+        'Debes iniciar sesión o registrarte para realizar una denuncia',
+      );
+      return;
+    }
+    
+    console.log('✅ [HomeScreen] Usuario autenticado, navegando a Denuncia');
     try {
-      const auth = await isCiudadanoAuthenticated();
-      console.log('🔐 [HomeScreen] Usuario autenticado:', auth);
-      
-      if (!auth) {
-        console.log('⚠️ [HomeScreen] Usuario no autenticado, mostrando alert');
-        Alert.alert(
-          'Acceso Requerido',
-          'Debes iniciar sesión para realizar una denuncia',
-          [
-            {text: 'Cancelar', style: 'cancel'},
-            {text: 'Iniciar Sesión', onPress: () => setModalVisible(true)},
-          ],
-        );
-        return;
-      }
-      
-      console.log('✅ [HomeScreen] Navegando a pantalla de denuncia');
       navigation.navigate('Denuncia');
+      console.log('✅ [HomeScreen] Navegación ejecutada');
     } catch (error) {
-      console.error('❌ [HomeScreen] Error en handleDenuncia:', error);
-      Alert.alert('Error', 'Ocurrió un error al intentar realizar la denuncia');
+      console.error('❌ [HomeScreen] Error en navegación:', error);
+      Alert.alert('Error', 'No se pudo abrir el formulario de denuncia');
     }
   };
 
@@ -225,13 +226,12 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
           {/* Botón de Realizar Denuncia */}
           <TouchableOpacity
             style={styles.denunciaButton}
-            onPress={handleDenuncia}
-            onPressIn={() => console.log('🔘 [HomeScreen] onPressIn disparado')}
-            onPressOut={() => console.log('🔘 [HomeScreen] onPressOut disparado')}
-            activeOpacity={0.8}
-            disabled={false}
-            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-            <View style={styles.denunciaButtonContent} pointerEvents="none">
+            onPress={() => {
+              console.log('🔘 [HomeScreen] TouchableOpacity onPress ejecutado');
+              handleDenuncia();
+            }}
+            activeOpacity={0.7}>
+            <View style={styles.denunciaButtonContent}>
               <Text style={styles.denunciaIcon}>🚨</Text>
               <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
             </View>
