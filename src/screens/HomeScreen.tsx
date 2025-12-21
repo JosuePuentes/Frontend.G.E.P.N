@@ -63,11 +63,30 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   const dorado = '#D4AF37';
 
   // Intentar cargar el escudo de la policía (opcional)
+  // Busca diferentes nombres posibles para el logo
   let escudoPolicia = null;
-  try {
-    escudoPolicia = require('../../assets/images/escudo-policia.png');
-  } catch (e) {
-    // Si la imagen no existe, escudoPolicia será null
+  const posiblesNombres = [
+    'escudo-policia.png',
+    'logo.png',
+    'logo-policia.png',
+    'escudo.png',
+    'GEPN-logo.png',
+    'gepn-logo.png',
+    'Gemini_Generated_Image_5keo7m5keo7m5keo.png', // Logo del usuario
+  ];
+  
+  for (const nombre of posiblesNombres) {
+    try {
+      escudoPolicia = require(`../../assets/images/${nombre}`);
+      console.log(`✅ Logo encontrado: ${nombre}`);
+      break;
+    } catch (e) {
+      // Continuar buscando
+    }
+  }
+  
+  if (!escudoPolicia) {
+    console.log('⚠️ No se encontró ningún logo en la carpeta de imágenes');
   }
 
   // Cargar imagen de fondo
