@@ -3,16 +3,22 @@
  * Web entry point
  */
 
-import {AppRegistry} from 'react-native';
+import React from 'react';
+import {createRoot} from 'react-dom/client';
 import App from './App';
-import {name as appName} from './app.json';
 
-// Register the app for web
-AppRegistry.registerComponent(appName, () => App);
+// Get root element
+const rootElement = document.getElementById('root');
 
-// Start the app
-AppRegistry.runApplication(appName, {
-  initialProps: {},
-  rootTag: document.getElementById('root'),
-});
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+// Create root and render app
+const root = createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
 
