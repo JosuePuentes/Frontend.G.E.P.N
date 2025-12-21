@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {registerCiudadano as apiRegister, loginCiudadano as apiLogin} from './apiService';
 
 const AUTH_KEY = 'ciudadano_auth';
 const USER_KEY = 'ciudadano_user';
+const TOKEN_KEY = 'authToken';
 
 export interface CiudadanoUser {
   nombre: string;
@@ -16,34 +18,17 @@ export const registerCiudadano = async (
   contraseña: string,
 ): Promise<boolean> => {
   try {
-    // Validar que la cédula no esté registrada
-    const existingUsers = await AsyncStorage.getItem('ciudadanos_registrados');
-    const users = existingUsers ? JSON.parse(existingUsers) : [];
+    // Usar el backend real
+    const result = await apiRegister(nombre, cedula, telefono, contraseña);
     
-    if (users.find((u: any) => u.cedula === cedula)) {
-      return false; // Cédula ya registrada
+    if (result.success) {
+      await AsyncStorage.setItem(AUTH_KEY, 'true');
+      return true;
     }
-
-    // Guardar usuario
-    const newUser = {
-      nombre,
-      cedula,
-      telefono,
-      contraseña, // En producción, esto debería estar hasheado
-    };
-    
-    users.push(newUser);
-    await AsyncStorage.setItem('ciudadanos_registrados', JSON.stringify(users));
-
-    // Auto-login después del registro
-    const userData: CiudadanoUser = {nombre, cedula, telefono};
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
-    await AsyncStorage.setItem(AUTH_KEY, 'true');
-
-    return true;
-  } catch (error) {
-    console.error('Error en registro:', error);
     return false;
+  } catch (error: any) {
+    console.error('Error en registro:', error);
+    throw error; // Re-lanzar para que el componente pueda manejar el error
   }
 };
 
@@ -52,28 +37,17 @@ export const loginCiudadano = async (
   contraseña: string,
 ): Promise<boolean> => {
   try {
-    const existingUsers = await AsyncStorage.getItem('ciudadanos_registrados');
-    const users = existingUsers ? JSON.parse(existingUsers) : [];
+    // Usar el backend real
+    const result = await apiLogin(cedula, contraseña);
     
-    const user = users.find(
-      (u: any) => u.cedula === cedula && u.contraseña === contraseña,
-    );
-
-    if (user) {
-      const userData: CiudadanoUser = {
-        nombre: user.nombre,
-        cedula: user.cedula,
-        telefono: user.telefono,
-      };
-      await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
+    if (result.success) {
       await AsyncStorage.setItem(AUTH_KEY, 'true');
       return true;
     }
-
     return false;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error en login:', error);
-    return false;
+    throw error; // Re-lanzar para que el componente pueda manejar el error
   }
 };
 
@@ -81,6 +55,7 @@ export const logoutCiudadano = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem(AUTH_KEY);
     await AsyncStorage.removeItem(USER_KEY);
+    await AsyncStorage.removeItem(TOKEN_KEY);
   } catch (error) {
     console.error('Error en logout:', error);
   }
@@ -88,8 +63,10 @@ export const logoutCiudadano = async (): Promise<void> => {
 
 export const isCiudadanoAuthenticated = async (): Promise<boolean> => {
   try {
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
     const auth = await AsyncStorage.getItem(AUTH_KEY);
-    return auth === 'true';
+    // Verificar que existan tanto el token como el flag de autenticación
+    return (auth === 'true' && token !== null);
   } catch (error) {
     return false;
   }
@@ -98,7 +75,17 @@ export const isCiudadanoAuthenticated = async (): Promise<boolean> => {
 export const getCiudadanoUser = async (): Promise<CiudadanoUser | null> => {
   try {
     const userData = await AsyncStorage.getItem(USER_KEY);
-    return userData ? JSON.parse(userData) : null;
+    if (userData) {
+      return JSON.parse(userData);
+    }
+    // Si no hay datos en AsyncStorage, intentar obtener del token
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+    if (token) {
+      // El token contiene la información del usuario
+      // Por ahora retornamos null y el componente debe manejar esto
+      return null;
+    }
+    return null;
   } catch (error) {
     return null;
   }
