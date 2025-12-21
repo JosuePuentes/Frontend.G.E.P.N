@@ -120,19 +120,30 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   };
 
   const handleDenuncia = async () => {
-    const auth = await isCiudadanoAuthenticated();
-    if (!auth) {
-      Alert.alert(
-        'Acceso Requerido',
-        'Debes iniciar sesión para realizar una denuncia',
-        [
-          {text: 'Cancelar', style: 'cancel'},
-          {text: 'Iniciar Sesión', onPress: () => setModalVisible(true)},
-        ],
-      );
-      return;
+    console.log('🚨 [HomeScreen] Botón de denuncia presionado');
+    try {
+      const auth = await isCiudadanoAuthenticated();
+      console.log('🔐 [HomeScreen] Usuario autenticado:', auth);
+      
+      if (!auth) {
+        console.log('⚠️ [HomeScreen] Usuario no autenticado, mostrando alert');
+        Alert.alert(
+          'Acceso Requerido',
+          'Debes iniciar sesión para realizar una denuncia',
+          [
+            {text: 'Cancelar', style: 'cancel'},
+            {text: 'Iniciar Sesión', onPress: () => setModalVisible(true)},
+          ],
+        );
+        return;
+      }
+      
+      console.log('✅ [HomeScreen] Navegando a pantalla de denuncia');
+      navigation.navigate('Denuncia');
+    } catch (error) {
+      console.error('❌ [HomeScreen] Error en handleDenuncia:', error);
+      Alert.alert('Error', 'Ocurrió un error al intentar realizar la denuncia');
     }
-    navigation.navigate('Denuncia');
   };
 
   const handleLogout = async () => {
@@ -214,8 +225,12 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
           {/* Botón de Realizar Denuncia */}
           <TouchableOpacity
             style={styles.denunciaButton}
-            onPress={handleDenuncia}
-            activeOpacity={0.8}>
+            onPress={() => {
+              console.log('🔘 [HomeScreen] Botón presionado directamente');
+              handleDenuncia();
+            }}
+            activeOpacity={0.8}
+            disabled={false}>
             <View style={styles.denunciaButtonContent}>
               <Text style={styles.denunciaIcon}>🚨</Text>
               <Text style={styles.denunciaButtonText}>Realizar Denuncia</Text>
