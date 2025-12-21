@@ -1,11 +1,23 @@
 import React from 'react';
+import {Platform} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
+// Deshabilitar react-native-screens para web (causa problemas de renderizado)
+if (Platform.OS === 'web') {
+  try {
+    const {enableScreens} = require('react-native-screens');
+    enableScreens(false);
+  } catch (e) {
+    // Ignorar si no está disponible
+  }
+}
+
 import HomeScreen from './src/screens/HomeScreen';
 import LoginPolicialScreen from './src/screens/LoginPolicialScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -17,19 +29,21 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            headerShown: false,
-          }}>
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="LoginPolicial" component={LoginPolicialScreen} />
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+              headerShown: false,
+            }}>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="LoginPolicial" component={LoginPolicialScreen} />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 };
 
