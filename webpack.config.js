@@ -1,22 +1,27 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 module.exports = {
   entry: './index.web.js',
-  mode: 'development',
-  devtool: 'source-map',
+  mode: isProduction ? 'production' : 'development',
+  devtool: isProduction ? 'source-map' : 'eval-source-map',
   module: {
     rules: [
       {
         test: /\.(ts|tsx|js|jsx)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!(react-native|@react-native|@react-navigation|react-native-web|react-native-safe-area-context|react-native-screens)\/).*/,
         use: {
           loader: 'babel-loader',
           options: {
             presets: [
-              '@babel/preset-env',
+              ['@babel/preset-env', {targets: {browsers: ['last 2 versions']}}],
               ['@babel/preset-react', {runtime: 'automatic'}],
+              '@babel/preset-typescript',
             ],
+            plugins: [],
+            cacheDirectory: true,
           },
         },
       },
@@ -49,9 +54,13 @@ module.exports = {
     historyApiFallback: true,
   },
   output: {
-    filename: 'bundle.js',
+    filename: isProduction ? 'bundle.[contenthash].js' : 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
+    clean: true,
+  },
+  optimization: {
+    minimize: isProduction,
   },
 };
 
