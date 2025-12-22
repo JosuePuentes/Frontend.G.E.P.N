@@ -351,6 +351,74 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                 </View>
               </View>
             )}
+
+          {/* Accesos Rápidos a Módulos */}
+          {masterUser && masterUser.permisos && masterUser.permisos.length > 0 && (
+            <View style={styles.modulosAccesoContainer}>
+              <Text style={styles.modulosAccesoTitulo}>Acceso Rápido a Módulos</Text>
+              <View style={styles.modulosAccesoGrid}>
+                {masterUser.permisos.map((permiso: string) => {
+                  const modulo = MODULOS.find(m => m.id === permiso);
+                  if (!modulo) return null;
+
+                  const handleNavigateToModule = () => {
+                    switch (permiso) {
+                      case 'rrhh':
+                        navigation.navigate('RRHH');
+                        break;
+                      case 'policial':
+                        navigation.navigate('LoginPolicial');
+                        break;
+                      case 'denuncias':
+                        navigation.navigate('Denuncia');
+                        break;
+                      case 'detenidos':
+                        Alert.alert('Info', 'Módulo de Detenidos - Próximamente');
+                        break;
+                      case 'minutas':
+                        Alert.alert('Info', 'Módulo de Minutas Digitales - Próximamente');
+                        break;
+                      case 'buscados':
+                        Alert.alert('Info', 'Módulo de Más Buscados - Próximamente');
+                        break;
+                      case 'verificacion':
+                        Alert.alert('Info', 'Módulo de Verificación de Cédulas - Próximamente');
+                        break;
+                      case 'panico':
+                        Alert.alert('Info', 'Módulo de Botón de Pánico - Próximamente');
+                        break;
+                      default:
+                        Alert.alert('Info', `Módulo ${modulo.nombre} - Próximamente`);
+                    }
+                  };
+
+                  return (
+                    <TouchableOpacity
+                      key={permiso}
+                      style={styles.moduloAccesoCard}
+                      onPress={handleNavigateToModule}
+                      activeOpacity={0.8}>
+                      <Text style={styles.moduloAccesoIcon}>
+                        {permiso === 'rrhh' ? '👥' :
+                         permiso === 'policial' ? '👮' :
+                         permiso === 'denuncias' ? '📋' :
+                         permiso === 'detenidos' ? '🔒' :
+                         permiso === 'minutas' ? '📝' :
+                         permiso === 'buscados' ? '🔍' :
+                         permiso === 'verificacion' ? '🆔' :
+                         permiso === 'panico' ? '🚨' : '📦'}
+                      </Text>
+                      <Text style={styles.moduloAccesoNombre}>{modulo.nombre}</Text>
+                      <Text style={styles.moduloAccesoDescripcion}>{modulo.descripcion}</Text>
+                      <View style={styles.moduloAccesoBadge}>
+                        <Text style={styles.moduloAccesoBadgeText}>Acceder →</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
           </View>
 
           <TouchableOpacity
