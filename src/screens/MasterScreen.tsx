@@ -28,18 +28,24 @@ import {
 // Importar imagen de fondo
 const backgroundImageStatic = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
 
-// Módulos disponibles del sistema
+// Módulos disponibles del sistema (para usuarios normales)
 const MODULOS = [
   {id: 'rrhh', nombre: 'RRHH - Recursos Humanos', descripcion: 'Gestionar oficiales y personal'},
   {id: 'policial', nombre: 'Módulo Policial', descripcion: 'Acceso al sistema policial'},
   {id: 'denuncias', nombre: 'Denuncias', descripcion: 'Gestionar denuncias ciudadanas'},
-  {id: 'centro-coordinacion', nombre: 'Centro de Coordinación', descripcion: 'Gestionar centros, estaciones y partes'},
   {id: 'detenidos', nombre: 'Detenidos', descripcion: 'Registro de detenidos'},
   {id: 'minutas', nombre: 'Minutas Digitales', descripcion: 'Crear y gestionar minutas'},
   {id: 'buscados', nombre: 'Más Buscados', descripcion: 'Lista de más buscados'},
   {id: 'verificacion', nombre: 'Verificación de Cédulas', descripcion: 'Verificar cédulas'},
   {id: 'panico', nombre: 'Botón de Pánico', descripcion: 'Gestionar alertas de pánico'},
 ];
+
+// Módulo exclusivo del admin (Centro de Coordinación)
+const MODULO_ADMIN = {
+  id: 'centro-coordinacion',
+  nombre: 'Centro de Coordinación',
+  descripcion: 'Gestionar centros, estaciones y partes (Solo Admin)',
+};
 
 type MasterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Master'>;
 
@@ -359,7 +365,9 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
               <Text style={styles.modulosAccesoTitulo}>Acceso Rápido a Módulos</Text>
               <View style={styles.modulosAccesoGrid}>
                 {masterUser.permisos.map((permiso: string) => {
-                  const modulo = MODULOS.find(m => m.id === permiso);
+                  // Buscar en módulos normales o en el módulo admin
+                  const modulo = MODULOS.find(m => m.id === permiso) || 
+                                 (permiso === MODULO_ADMIN.id ? MODULO_ADMIN : null);
                   if (!modulo) return null;
 
                   const handleNavigateToModule = () => {
@@ -549,6 +557,9 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
               <Text style={styles.modalSectionTitle}>Seleccionar Permisos</Text>
               <Text style={styles.modalSectionSubtitle}>
                 Selecciona los módulos a los que tendrá acceso este usuario
+              </Text>
+              <Text style={styles.modalSectionNote}>
+                Nota: El módulo "Centro de Coordinación" solo puede ser asignado por el administrador principal.
               </Text>
               <ScrollView style={styles.modulosList} nestedScrollEnabled>
                 {MODULOS.map(modulo => {
@@ -1210,8 +1221,23 @@ const styles = StyleSheet.create({
   modalSectionSubtitle: {
     fontSize: 12,
     color: '#CCCCCC',
+    marginBottom: 10,
+    fontStyle: 'italic',
+  },
+  modalSectionNote: {
+    fontSize: 11,
+    color: '#D4AF37',
     marginBottom: 15,
     fontStyle: 'italic',
+    textAlign: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: 6,
+  },
+  moduloItemAdmin: {
+    borderColor: '#D4AF37',
+    borderWidth: 2,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
   },
   modalActions: {
     flexDirection: 'row',
