@@ -211,6 +211,61 @@ export const verificarQR = async (qrData: string): Promise<{success: boolean; da
 };
 
 // Funciones para Master
+export const loginMaster = async (
+  usuario: string,
+  contraseña: string,
+): Promise<{success: boolean; token?: string; usuario?: any}> => {
+  try {
+    const response = await api.post('/api/master/login', {
+      usuario,
+      contraseña,
+    });
+
+    if (response.data.success && response.data.token) {
+      await AsyncStorage.setItem('masterToken', response.data.token);
+      await AsyncStorage.setItem('master_user', JSON.stringify(response.data.usuario));
+      // También guardar en authToken para que el interceptor lo use
+      await AsyncStorage.setItem('authToken', response.data.token);
+      return {
+        success: true,
+        token: response.data.token,
+        usuario: response.data.usuario,
+      };
+    }
+    return {success: false};
+  } catch (error: any) {
+    console.error('Error en login master:', error);
+    return {
+      success: false,
+    };
+  }
+};
+
+export const isMasterAuthenticated = async (): Promise<boolean> => {
+  try {
+    const token = await AsyncStorage.getItem('masterToken');
+    const user = await AsyncStorage.getItem('master_user');
+    return !!(token && user);
+  } catch {
+    return false;
+  }
+};
+
+export const getMasterUser = async (): Promise<any | null> => {
+  try {
+    const userStr = await AsyncStorage.getItem('master_user');
+    return userStr ? JSON.parse(userStr) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const logoutMaster = async (): Promise<void> => {
+  await AsyncStorage.removeItem('masterToken');
+  await AsyncStorage.removeItem('master_user');
+  // No remover authToken aquí porque puede ser usado por otros módulos
+};
+
 export const crearUsuarioMaster = async (datos: {
   usuario: string;
   nombre: string;

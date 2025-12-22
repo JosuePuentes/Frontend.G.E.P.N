@@ -15,6 +15,10 @@ import {
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
 import {
+  loginMaster,
+  isMasterAuthenticated,
+  getMasterUser,
+  logoutMaster,
   crearUsuarioMaster,
   listarUsuariosMaster,
   actualizarPermisosMaster,
@@ -53,6 +57,17 @@ interface UsuarioMaster {
 }
 
 const MasterScreen: React.FC<Props> = ({navigation}) => {
+  // Estados de autenticación
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [masterUser, setMasterUser] = useState<any>(null);
+  const [showLogin, setShowLogin] = useState(true);
+  
+  // Estados de login
+  const [loginUsuario, setLoginUsuario] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Estados de gestión de usuarios
   const [usuarios, setUsuarios] = useState<UsuarioMaster[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCrearModal, setShowCrearModal] = useState(false);
@@ -67,8 +82,58 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
   const [permisosSeleccionados, setPermisosSeleccionados] = useState<string[]>([]);
 
   useEffect(() => {
-    cargarUsuarios();
+    verificarAutenticacion();
   }, []);
+
+  const verificarAutenticacion = async () => {
+    const auth = await isMasterAuthenticated();
+    if (auth) {
+      const user = await getMasterUser();
+      setMasterUser(user);
+      setIsAuthenticated(true);
+      setShowLogin(false);
+      cargarUsuarios();
+    } else {
+      setIsAuthenticated(false);
+      setShowLogin(true);
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!loginUsuario.trim() || !loginPassword.trim()) {
+      Alert.alert('Error', 'Por favor completa todos los campos');
+      return;
+    }
+
+    setLoginLoading(true);
+    try {
+      const result = await loginMaster(loginUsuario.trim(), loginPassword);
+      if (result.success && result.usuario) {
+        setMasterUser(result.usuario);
+        setIsAuthenticated(true);
+        setShowLogin(false);
+        setLoginUsuario('');
+        setLoginPassword('');
+        cargarUsuarios();
+        Alert.alert('Éxito', 'Sesión iniciada correctamente');
+      } else {
+        Alert.alert('Error', 'Usuario o contraseña incorrectos');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Error al iniciar sesión');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logoutMaster();
+    setIsAuthenticated(false);
+    setMasterUser(null);
+    setShowLogin(true);
+    setUsuarios([]);
+    Alert.alert('Éxito', 'Sesión cerrada correctamente');
+  };
 
   const cargarUsuarios = async () => {
     setLoading(true);
@@ -169,6 +234,68 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
     }
   };
 
+  // Si no está autenticado, mostrar login
+  if (showLogin || !isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ImageBackground
+          source={backgroundImageStatic}
+          style={styles.backgroundImage}
+          resizeMode="cover">
+          <View style={styles.overlay} />
+
+          <View style={styles.loginContainer}>
+            <View style={styles.loginCard}>
+              <Text style={styles.loginTitle}>Acceso Master</Text>
+              <Text style={styles.loginSubtitle}>
+                Sistema de Gestión de Usuarios y Permisos
+              </Text>
+
+              <View style={styles.loginForm}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Usuario</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={loginUsuario}
+                    onChangeText={setLoginUsuario}
+                    placeholder="Ingresa tu usuario"
+                    placeholderTextColor="#999"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Contraseña</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={loginPassword}
+                    onChangeText={setLoginPassword}
+                    placeholder="Ingresa tu contraseña"
+                    placeholderTextColor="#999"
+                    secureTextEntry
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.loginButton, loginLoading && styles.loginButtonDisabled]}
+                  onPress={handleLogin}
+                  disabled={loginLoading}>
+                  {loginLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </ImageBackground>
+      </SafeAreaView>
+    );
+  }
+
+  // Si está autenticado, mostrar panel de gestión
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -181,8 +308,30 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={styles.title}>Panel Master</Text>
-            <Text style={styles.subtitle}>Gestión de Usuarios y Permisos</Text>
+            <View style={styles.headerTop}>
+              <View>
+                <Text style={styles.title}>Panel Master</Text>
+                <Text style={styles.subtitle}>Gestión de Usuarios y Permisos</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}>
+                <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+              </TouchableOpacity>
+            </View>
+            {masterUser && (
+              <View style={styles.userInfo}>
+                <Text style={styles.userInfoText}>
+                  Conectado como: <Text style={styles.userInfoBold}>{masterUser.nombre}</Text>
+                </Text>
+                <Text style={styles.userInfoText}>
+                  Usuario: <Text style={styles.userInfoBold}>@{masterUser.usuario}</Text>
+                </Text>
+                <Text style={styles.userInfoText}>
+                  Permisos: <Text style={styles.userInfoBold}>Todos los módulos</Text>
+                </Text>
+              </View>
+            )}
           </View>
 
           <TouchableOpacity
@@ -306,25 +455,48 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
               />
 
               <Text style={styles.modalSectionTitle}>Seleccionar Permisos</Text>
+              <Text style={styles.modalSectionSubtitle}>
+                Selecciona los módulos a los que tendrá acceso este usuario
+              </Text>
               <ScrollView style={styles.modulosList} nestedScrollEnabled>
-                {MODULOS.map(modulo => (
-                  <TouchableOpacity
-                    key={modulo.id}
-                    style={[
-                      styles.moduloItem,
-                      permisosSeleccionados.includes(modulo.id) && styles.moduloItemSelected,
-                    ]}
-                    onPress={() => handleTogglePermiso(modulo.id)}>
-                    <View style={styles.moduloInfo}>
-                      <Text style={styles.moduloNombre}>{modulo.nombre}</Text>
-                      <Text style={styles.moduloDescripcion}>{modulo.descripcion}</Text>
-                    </View>
-                    {permisosSeleccionados.includes(modulo.id) && (
-                      <Text style={styles.checkMark}>✓</Text>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                {MODULOS.map(modulo => {
+                  const isSelected = permisosSeleccionados.includes(modulo.id);
+                  return (
+                    <TouchableOpacity
+                      key={modulo.id}
+                      style={[
+                        styles.moduloItem,
+                        isSelected && styles.moduloItemSelected,
+                      ]}
+                      onPress={() => handleTogglePermiso(modulo.id)}>
+                      <View style={styles.moduloCheckbox}>
+                        <View
+                          style={[
+                            styles.checkboxCircle,
+                            isSelected && styles.checkboxCircleSelected,
+                          ]}>
+                          {isSelected && <Text style={styles.checkMark}>✓</Text>}
+                        </View>
+                      </View>
+                      <View style={styles.moduloInfo}>
+                        <Text style={[styles.moduloNombre, isSelected && styles.moduloNombreSelected]}>
+                          {modulo.nombre}
+                        </Text>
+                        <Text style={[styles.moduloDescripcion, isSelected && styles.moduloDescripcionSelected]}>
+                          {modulo.descripcion}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </ScrollView>
+              {permisosSeleccionados.length > 0 && (
+                <View style={styles.selectedCount}>
+                  <Text style={styles.selectedCountText}>
+                    {permisosSeleccionados.length} módulo{permisosSeleccionados.length !== 1 ? 's' : ''} seleccionado{permisosSeleccionados.length !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+              )}
 
               <View style={styles.modalActions}>
                 <TouchableOpacity
@@ -367,24 +539,44 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
               </Text>
 
               <ScrollView style={styles.modulosList} nestedScrollEnabled>
-                {MODULOS.map(modulo => (
-                  <TouchableOpacity
-                    key={modulo.id}
-                    style={[
-                      styles.moduloItem,
-                      permisosSeleccionados.includes(modulo.id) && styles.moduloItemSelected,
-                    ]}
-                    onPress={() => handleTogglePermiso(modulo.id)}>
-                    <View style={styles.moduloInfo}>
-                      <Text style={styles.moduloNombre}>{modulo.nombre}</Text>
-                      <Text style={styles.moduloDescripcion}>{modulo.descripcion}</Text>
-                    </View>
-                    {permisosSeleccionados.includes(modulo.id) && (
-                      <Text style={styles.checkMark}>✓</Text>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                {MODULOS.map(modulo => {
+                  const isSelected = permisosSeleccionados.includes(modulo.id);
+                  return (
+                    <TouchableOpacity
+                      key={modulo.id}
+                      style={[
+                        styles.moduloItem,
+                        isSelected && styles.moduloItemSelected,
+                      ]}
+                      onPress={() => handleTogglePermiso(modulo.id)}>
+                      <View style={styles.moduloCheckbox}>
+                        <View
+                          style={[
+                            styles.checkboxCircle,
+                            isSelected && styles.checkboxCircleSelected,
+                          ]}>
+                          {isSelected && <Text style={styles.checkMark}>✓</Text>}
+                        </View>
+                      </View>
+                      <View style={styles.moduloInfo}>
+                        <Text style={[styles.moduloNombre, isSelected && styles.moduloNombreSelected]}>
+                          {modulo.nombre}
+                        </Text>
+                        <Text style={[styles.moduloDescripcion, isSelected && styles.moduloDescripcionSelected]}>
+                          {modulo.descripcion}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </ScrollView>
+              {permisosSeleccionados.length > 0 && (
+                <View style={styles.selectedCount}>
+                  <Text style={styles.selectedCountText}>
+                    {permisosSeleccionados.length} módulo{permisosSeleccionados.length !== 1 ? 's' : ''} seleccionado{permisosSeleccionados.length !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+              )}
 
               <View style={styles.modalActions}>
                 <TouchableOpacity
@@ -444,6 +636,12 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: 'center',
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 15,
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -457,6 +655,75 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#D4AF37',
     fontWeight: '600',
+  },
+  userInfo: {
+    backgroundColor: 'rgba(0, 36, 125, 0.3)',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#0033A0',
+    marginTop: 10,
+  },
+  userInfoText: {
+    color: '#CCCCCC',
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  userInfoBold: {
+    color: '#D4AF37',
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: '#2a2a2a',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3a3a3a',
+  },
+  logoutButtonText: {
+    color: '#CCCCCC',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  loginContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loginCard: {
+    width: '100%',
+    maxWidth: 450,
+    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+    borderRadius: 20,
+    padding: 30,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    shadowColor: '#D4AF37',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  loginTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#D4AF37',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  loginSubtitle: {
+    fontSize: 14,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  loginForm: {
+    width: '100%',
   },
   crearButton: {
     backgroundColor: '#00247D',
@@ -638,18 +905,35 @@ const styles = StyleSheet.create({
   },
   moduloItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderRadius: 10,
+    marginBottom: 12,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#2a2a2a',
+    minHeight: 70,
   },
   moduloItemSelected: {
     borderColor: '#D4AF37',
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+  },
+  moduloCheckbox: {
+    marginRight: 15,
+  },
+  checkboxCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxCircleSelected: {
+    backgroundColor: '#D4AF37',
+    borderColor: '#D4AF37',
   },
   moduloInfo: {
     flex: 1,
@@ -660,14 +944,42 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 5,
   },
-  moduloDescripcion: {
-    fontSize: 12,
-    color: '#CCCCCC',
-  },
-  checkMark: {
-    fontSize: 24,
+  moduloNombreSelected: {
     color: '#D4AF37',
     fontWeight: 'bold',
+  },
+  moduloDescripcion: {
+    fontSize: 13,
+    color: '#CCCCCC',
+    lineHeight: 18,
+  },
+  moduloDescripcionSelected: {
+    color: '#FFFFFF',
+  },
+  checkMark: {
+    fontSize: 18,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  selectedCount: {
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: 'rgba(0, 36, 125, 0.3)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#0033A0',
+  },
+  selectedCountText: {
+    color: '#D4AF37',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  modalSectionSubtitle: {
+    fontSize: 12,
+    color: '#CCCCCC',
+    marginBottom: 15,
+    fontStyle: 'italic',
   },
   modalActions: {
     flexDirection: 'row',
