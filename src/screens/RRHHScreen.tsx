@@ -267,30 +267,39 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     setLoading(true);
 
     try {
+      // Preparar datos de hijos con formato correcto
+      const hijosFormateados = hijos.length > 0 
+        ? hijos.map(hijo => ({
+            nombre: hijo.nombre.trim(),
+            cedula: hijo.cedula.trim(),
+            fecha_nacimiento: hijo.fechaNacimiento.trim() || null,
+          }))
+        : null;
+
       const datosOficial = {
-        primerNombre: primerNombre.trim(),
-        segundoNombre: segundoNombre.trim(),
-        primerApellido: primerApellido.trim(),
-        segundoApellido: segundoApellido.trim(),
+        primer_nombre: primerNombre.trim(),
+        segundo_nombre: segundoNombre.trim() || null,
+        primer_apellido: primerApellido.trim(),
+        segundo_apellido: segundoApellido.trim() || null,
         cedula: cedula.trim(),
         contraseña,
-        fechaNacimiento,
+        fecha_nacimiento: fechaNacimiento,
         estatura: parseFloat(estatura),
-        colorPiel,
-        tipoSangre,
-        ciudadNacimiento: ciudadNacimiento.trim(),
+        color_piel: colorPiel,
+        tipo_sangre: tipoSangre,
+        ciudad_nacimiento: ciudadNacimiento.trim(),
         credencial: credencial.trim(),
         rango,
         destacado: '', // Campo destacado se deja vacío en RRHH (se asigna en otros módulos)
-        fechaGraduacion: fechaGraduacion.trim(),
+        fecha_graduacion: fechaGraduacion.trim(),
         antiguedad: parseFloat(antiguedad),
         estado: estadosVenezuela.find(e => e.id === estado)?.nombre || '',
         municipio: municipiosDisponibles.find(m => m.id === municipio)?.nombre || '',
         parroquia,
-        licenciaConducir: licenciaConducir.trim() || null,
-        carnetMedico: carnetMedico.trim() || null,
-        fotoCara, // Base64
-        fotoCarnet: fotoCarnet || null, // Base64 opcional
+        licencia_conducir: licenciaConducir.trim() || null,
+        carnet_medico: carnetMedico.trim() || null,
+        foto_cara: fotoCara, // Base64
+        foto_carnet: fotoCarnet || null, // Base64 opcional
         // Información sensible (NO aparece en QR)
         parientes: {
           padre: {
@@ -305,12 +314,49 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             nombre: esposaNombre.trim() || null,
             cedula: esposaCedula.trim() || null,
           },
-          hijos: hijos.length > 0 ? hijos : null,
+          hijos: hijosFormateados,
         },
       };
 
+      console.log('Datos a enviar:', JSON.stringify(datosOficial, null, 2));
+
+      console.log('Enviando datos al backend...');
       const result = await registrarOficial(datosOficial);
+      console.log('Respuesta del backend:', result);
+      
       if (result.success) {
+        // Limpiar formulario primero
+        setPrimerNombre('');
+        setSegundoNombre('');
+        setPrimerApellido('');
+        setSegundoApellido('');
+        setCedula('');
+        setContraseña('');
+        setFechaNacimiento('');
+        setEstatura('');
+        setColorPiel('');
+        setTipoSangre('');
+        setCiudadNacimiento('');
+        setCredencial('');
+        setRango('');
+        setDestacado('');
+        setFechaGraduacion('');
+        setAntiguedad('');
+        setLicenciaConducir('');
+        setCarnetMedico('');
+        setPadreNombre('');
+        setPadreCedula('');
+        setMadreNombre('');
+        setMadreCedula('');
+        setEsposaNombre('');
+        setEsposaCedula('');
+        setHijos([]);
+        setEstado('');
+        setMunicipio('');
+        setParroquia('');
+        setFotoCara(null);
+        setFotoCarnet(null);
+        
         Alert.alert('Éxito', 'Oficial registrado correctamente');
         // Limpiar formulario
         setPrimerNombre('');
@@ -343,9 +389,13 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setParroquia('');
         setFotoCara(null);
         setFotoCarnet(null);
+        
+        Alert.alert('Éxito', 'Oficial registrado correctamente');
       } else {
         // Mostrar mensaje específico del backend (para credenciales duplicadas, etc.)
         const mensajeError = result.message || 'No se pudo registrar el oficial';
+        console.error('Error al registrar:', mensajeError);
+        
         if (mensajeError.toLowerCase().includes('credencial') || mensajeError.toLowerCase().includes('duplicad')) {
           Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
         } else if (mensajeError.toLowerCase().includes('cédula') || mensajeError.toLowerCase().includes('cedula')) {
@@ -356,13 +406,14 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       }
     } catch (error: any) {
       // Manejar errores de red o del servidor
+      console.error('Error completo:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
       
       if (errorMessage.toLowerCase().includes('credencial') || errorMessage.toLowerCase().includes('duplicad')) {
         Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
       } else if (errorMessage.toLowerCase().includes('cédula') || errorMessage.toLowerCase().includes('cedula')) {
         Alert.alert('Error', 'La cédula ya está registrada. Por favor verifica los datos.');
-      } else if (error.message && error.message.includes('Network')) {
+      } else if (error.message && (error.message.includes('Network') || error.message.includes('timeout'))) {
         Alert.alert('Error de Conexión', 'Error de conexión. Por favor verifica tu conexión a internet');
       } else {
         Alert.alert('Error', errorMessage);
