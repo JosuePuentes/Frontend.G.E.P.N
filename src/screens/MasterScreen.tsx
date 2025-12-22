@@ -342,7 +342,9 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                   <View style={styles.permisosTags}>
                     {masterUser.permisos && masterUser.permisos.length > 0 ? (
                       masterUser.permisos.map((permiso: string) => {
-                        const modulo = MODULOS.find(m => m.id === permiso);
+                        // Buscar en módulos normales o en el módulo admin
+                        const modulo = MODULOS.find(m => m.id === permiso) || 
+                                       (permiso === MODULO_ADMIN.id ? MODULO_ADMIN : null);
                         return (
                           <View key={permiso} style={styles.permisoTag}>
                             <Text style={styles.permisoTagText}>
@@ -470,7 +472,9 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                     <View style={styles.permisosTags}>
                       {usuario.permisos.length > 0 ? (
                         usuario.permisos.map(permiso => {
-                          const modulo = MODULOS.find(m => m.id === permiso);
+                          // Buscar en módulos normales o en el módulo admin
+                          const modulo = MODULOS.find(m => m.id === permiso) || 
+                                         (permiso === MODULO_ADMIN.id ? MODULO_ADMIN : null);
                           return (
                             <View key={permiso} style={styles.permisoTag}>
                               <Text style={styles.permisoTagText}>
