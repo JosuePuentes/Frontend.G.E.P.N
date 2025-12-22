@@ -18,6 +18,7 @@ import {RootStackParamList} from '../../App';
 import {estadosVenezuela, Estado, Municipio} from '../data/venezuelaData';
 import {getCiudadesByEstado} from '../data/ciudadesVenezuela';
 import {registrarOficial, generarQROficial, listarOficiales} from '../services/apiService';
+import DatePickerField from '../components/DatePickerField';
 
 // Importar imagen de fondo
 const backgroundImageStatic = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
@@ -199,6 +200,55 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     return partes.join(' ') || 'Sin nombre';
   };
 
+  // Funciones de validación de fechas
+  const validarFecha = (fecha: string, nombreCampo: string): string | null => {
+    if (!fecha.trim()) {
+      return `${nombreCampo} es obligatorio`;
+    }
+
+    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!fechaRegex.test(fecha)) {
+      return `${nombreCampo} debe estar en formato YYYY-MM-DD`;
+    }
+
+    const fechaObj = new Date(fecha);
+    if (isNaN(fechaObj.getTime())) {
+      return `${nombreCampo} no es una fecha válida`;
+    }
+
+    // Verificar que no sea fecha futura
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    if (fechaObj > hoy) {
+      return `${nombreCampo} no puede ser una fecha futura`;
+    }
+
+    return null;
+  };
+
+  const validarFechaGraduacion = (fechaNac: string, fechaGrad: string): string | null => {
+    if (!fechaNac || !fechaGrad) return null;
+
+    const fechaNacObj = new Date(fechaNac);
+    const fechaGradObj = new Date(fechaGrad);
+
+    // Calcular diferencia en años
+    const diffAnios = fechaGradObj.getFullYear() - fechaNacObj.getFullYear();
+    const diffMeses = fechaGradObj.getMonth() - fechaNacObj.getMonth();
+    const diffDias = fechaGradObj.getDate() - fechaNacObj.getDate();
+
+    let añosCompletos = diffAnios;
+    if (diffMeses < 0 || (diffMeses === 0 && diffDias < 0)) {
+      añosCompletos--;
+    }
+
+    if (añosCompletos < 18) {
+      return 'La fecha de graduación debe ser al menos 18 años después de la fecha de nacimiento';
+    }
+
+    return null;
+  };
+
   const handleImagePicker = (tipo: 'cara' | 'carnet') => {
     if (Platform.OS === 'web') {
       // @ts-ignore - document existe en web
@@ -325,14 +375,22 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       return;
     }
 
-    // Validación de formato de fecha (YYYY-MM-DD)
-    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!fechaRegex.test(fechaNacimiento)) {
-      Alert.alert('Error', 'La fecha de nacimiento debe estar en formato YYYY-MM-DD');
+    // Validación de fechas
+    const errorFechaNac = validarFecha(fechaNacimiento, 'La fecha de nacimiento');
+    if (errorFechaNac) {
+      Alert.alert('Error', errorFechaNac);
       return;
     }
-    if (!fechaRegex.test(fechaGraduacion)) {
-      Alert.alert('Error', 'La fecha de graduación debe estar en formato YYYY-MM-DD');
+
+    const errorFechaGrad = validarFecha(fechaGraduacion, 'La fecha de graduación');
+    if (errorFechaGrad) {
+      Alert.alert('Error', errorFechaGrad);
+      return;
+    }
+
+    const errorRelacionFechas = validarFechaGraduacion(fechaNacimiento, fechaGraduacion);
+    if (errorRelacionFechas) {
+      Alert.alert('Error', errorRelacionFechas);
       return;
     }
 
@@ -730,13 +788,13 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Fecha de Nacimiento *</Text>
-              <TextInput
-                style={styles.input}
+              <DatePickerField
+                label="Fecha de Nacimiento"
                 value={fechaNacimiento}
-                onChangeText={setFechaNacimiento}
+                onChange={setFechaNacimiento}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#999"
+                required
+                maximumDate={new Date()}
               />
             </View>
 
@@ -907,13 +965,18 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
 
             <View style={styles.row}>
               <View style={styles.halfInput}>
-                <Text style={styles.label}>Fecha de Graduación *</Text>
-                <TextInput
-                  style={styles.input}
+                <DatePickerField
+                  label="Fecha de Graduación"
                   value={fechaGraduacion}
-                  onChangeText={setFechaGraduacion}
+                  onChange={setFechaGraduacion}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#999"
+                  required
+                  maximumDate={new Date()}
+                  minimumDate={fechaNacimiento ? (() => {
+                    const fechaMin = new Date(fechaNacimiento);
+                    fechaMin.setFullYear(fechaMin.getFullYear() + 18);
+                    return fechaMin;
+                  })() : undefined}
                 />
               </View>
               <View style={styles.halfInput}>
@@ -1071,13 +1134,15 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
                     placeholder="Cédula"
                     placeholderTextColor="#999"
                   />
-                  <TextInput
-                    style={[styles.input, {marginTop: 10}]}
-                    value={hijoFechaNacimiento}
-                    onChangeText={setHijoFechaNacimiento}
-                    placeholder="Fecha de nacimiento (YYYY-MM-DD)"
-                    placeholderTextColor="#999"
-                  />
+                  <View style={{marginTop: 10}}>
+                    <DatePickerField
+                      label="Fecha de Nacimiento del Hijo"
+                      value={hijoFechaNacimiento}
+                      onChange={setHijoFechaNacimiento}
+                      placeholder="YYYY-MM-DD"
+                      maximumDate={new Date()}
+                    />
+                  </View>
                   <View style={styles.hijoFormButtons}>
                     <TouchableOpacity
                       style={styles.addHijoButton}
