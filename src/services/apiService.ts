@@ -340,5 +340,132 @@ export const obtenerModulos = async (): Promise<{success: boolean; data?: any[]}
   }
 };
 
+// Funciones para Centro de Coordinación Policial
+export const crearCentroCoordinacion = async (datos: {
+  estado: string;
+  nombre: string;
+}): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.post('/api/centro-coordinacion/crear', datos);
+    return {success: response.data.success, message: response.data.message};
+  } catch (error: any) {
+    console.error('Error al crear centro de coordinación:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al crear centro de coordinación',
+    };
+  }
+};
+
+export const listarCentrosCoordinacion = async (): Promise<{success: boolean; data?: any[]}> => {
+  try {
+    const response = await api.get('/api/centro-coordinacion/listar');
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.error('Error al listar centros de coordinación:', error);
+    return {success: false};
+  }
+};
+
+export const crearEstacionPolicial = async (datos: {
+  centroCoordinacionId: string;
+  nombre: string;
+  direccion: string;
+  telefono?: string;
+}): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.post('/api/centro-coordinacion/estacion/crear', datos);
+    return {success: response.data.success, message: response.data.message};
+  } catch (error: any) {
+    console.error('Error al crear estación policial:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al crear estación policial',
+    };
+  }
+};
+
+export const listarEstacionesPolicial = async (
+  centroId: string,
+): Promise<{success: boolean; data?: any[]}> => {
+  try {
+    const response = await api.get(`/api/centro-coordinacion/estaciones/${centroId}`);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.error('Error al listar estaciones:', error);
+    return {success: false};
+  }
+};
+
+export const crearParte = async (datos: {
+  estacionPolicialId: string;
+  numero: string;
+}): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.post('/api/centro-coordinacion/parte/crear', datos);
+    return {success: response.data.success, message: response.data.message};
+  } catch (error: any) {
+    console.error('Error al crear parte:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al crear parte',
+    };
+  }
+};
+
+export const listarPartes = async (estacionId: string): Promise<{success: boolean; data?: any[]}> => {
+  try {
+    const response = await api.get(`/api/centro-coordinacion/partes/${estacionId}`);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.error('Error al listar partes:', error);
+    return {success: false};
+  }
+};
+
+export const buscarFuncionarios = async (
+  busqueda: string,
+): Promise<{success: boolean; data?: any[]; message?: string}> => {
+  try {
+    const response = await api.get(`/api/centro-coordinacion/buscar-funcionarios?q=${encodeURIComponent(busqueda)}`);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: any) {
+    console.error('Error al buscar funcionarios:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al buscar funcionarios',
+    };
+  }
+};
+
+export const asignarFuncionarioAParte = async (datos: {
+  parteId: string;
+  funcionarioId: string;
+}): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.post('/api/centro-coordinacion/parte/asignar-funcionario', datos);
+    return {success: response.data.success, message: response.data.message};
+  } catch (error: any) {
+    console.error('Error al asignar funcionario:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al asignar funcionario',
+    };
+  }
+};
+
 export default api;
 

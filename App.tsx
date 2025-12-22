@@ -22,6 +22,7 @@ import DenunciaScreen from './src/screens/DenunciaScreen';
 import RRHHScreen from './src/screens/RRHHScreen';
 import QRScannerScreen from './src/screens/QRScannerScreen';
 import MasterScreen from './src/screens/MasterScreen';
+import CentroCoordinacionScreen from './src/screens/CentroCoordinacionScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 export type RootStackParamList = {
@@ -32,6 +33,7 @@ export type RootStackParamList = {
   RRHH: undefined;
   QRScanner: undefined;
   Master: undefined;
+  CentroCoordinacion: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -40,15 +42,16 @@ const Stack = createStackNavigator<RootStackParamList>();
 const linking = {
   prefixes: Platform.OS === 'web' ? ['/'] : ['gepn://'],
   config: {
-    screens: {
-      Home: '',
-      LoginPolicial: 'policial',
-      Dashboard: 'dashboard',
-      Denuncia: 'denuncia',
-      RRHH: 'rrhh',
-      QRScanner: 'qr-scanner',
-      Master: 'master',
-    },
+        screens: {
+          Home: '',
+          LoginPolicial: 'policial',
+          Dashboard: 'dashboard',
+          Denuncia: 'denuncia',
+          RRHH: 'rrhh',
+          QRScanner: 'qr-scanner',
+          Master: 'master',
+          CentroCoordinacion: 'centro-coordinacion',
+        },
   },
 };
 
@@ -99,6 +102,7 @@ const App = () => {
             <Stack.Screen name="RRHH" component={RRHHScreen} />
             <Stack.Screen name="QRScanner" component={QRScannerScreen} />
             <Stack.Screen name="Master" component={MasterScreen} />
+            <Stack.Screen name="CentroCoordinacion" component={CentroCoordinacionScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>

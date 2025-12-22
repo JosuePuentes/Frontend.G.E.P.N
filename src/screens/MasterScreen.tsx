@@ -33,6 +33,7 @@ const MODULOS = [
   {id: 'rrhh', nombre: 'RRHH - Recursos Humanos', descripcion: 'Gestionar oficiales y personal'},
   {id: 'policial', nombre: 'Módulo Policial', descripcion: 'Acceso al sistema policial'},
   {id: 'denuncias', nombre: 'Denuncias', descripcion: 'Gestionar denuncias ciudadanas'},
+  {id: 'centro-coordinacion', nombre: 'Centro de Coordinación', descripcion: 'Gestionar centros, estaciones y partes'},
   {id: 'detenidos', nombre: 'Detenidos', descripcion: 'Registro de detenidos'},
   {id: 'minutas', nombre: 'Minutas Digitales', descripcion: 'Crear y gestionar minutas'},
   {id: 'buscados', nombre: 'Más Buscados', descripcion: 'Lista de más buscados'},
@@ -372,6 +373,9 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                       case 'denuncias':
                         navigation.navigate('Denuncia');
                         break;
+                      case 'centro-coordinacion':
+                        navigation.navigate('CentroCoordinacion');
+                        break;
                       case 'detenidos':
                         Alert.alert('Info', 'Módulo de Detenidos - Próximamente');
                         break;
@@ -402,6 +406,7 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                         {permiso === 'rrhh' ? '👥' :
                          permiso === 'policial' ? '👮' :
                          permiso === 'denuncias' ? '📋' :
+                         permiso === 'centro-coordinacion' ? '🏢' :
                          permiso === 'detenidos' ? '🔒' :
                          permiso === 'minutas' ? '📝' :
                          permiso === 'buscados' ? '🔍' :
