@@ -406,11 +406,12 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       return;
     }
 
-    console.log('Todas las validaciones pasaron, iniciando registro...');
+    console.log('✅ Todas las validaciones pasaron, iniciando registro...');
     setLoading(true);
-    console.log('Loading activado');
+    console.log('⏳ Loading activado');
 
     try {
+      console.log('📦 Preparando datos de hijos...');
       // Preparar datos de hijos con formato correcto
       const hijosFormateados = hijos.length > 0 
         ? hijos.map(hijo => ({
@@ -419,7 +420,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             fecha_nacimiento: hijo.fechaNacimiento.trim() || null,
           }))
         : null;
+      console.log('✅ Hijos formateados:', hijosFormateados);
 
+      console.log('📦 Preparando datos del oficial...');
       const datosOficial = {
         primer_nombre: primerNombre.trim(),
         segundo_nombre: segundoNombre.trim() || null,
@@ -462,17 +465,19 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         },
       };
 
-      console.log('Datos a enviar:', JSON.stringify(datosOficial, null, 2));
+      console.log('📤 Datos a enviar:', JSON.stringify(datosOficial, null, 2));
 
-      console.log('=== ENVIANDO DATOS AL BACKEND ===');
+      console.log('🚀 === ENVIANDO DATOS AL BACKEND ===');
       const result = await registrarOficial(datosOficial);
-      console.log('=== RESPUESTA RECIBIDA ===');
-      console.log('Result:', result);
-      console.log('Success:', result.success);
-      console.log('Message:', result.message);
+      console.log('📥 === RESPUESTA RECIBIDA ===');
+      console.log('✅ Result:', result);
+      console.log('✅ Success:', result.success);
+      console.log('✅ Message:', result.message);
       
+      console.log('🔍 Verificando resultado...');
       if (result.success) {
-        console.log('Registro exitoso, limpiando formulario...');
+        console.log('✅ ✅ ✅ REGISTRO EXITOSO ✅ ✅ ✅');
+        console.log('🧹 Limpiando formulario...');
         // Limpiar formulario primero
         setPrimerNombre('');
         setSegundoNombre('');
@@ -544,18 +549,26 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setFotoCarnet(null);
         
         console.log('Mostrando mensaje de éxito...');
+        console.log('📢 Mostrando alerta de éxito...');
         Alert.alert('Éxito', 'Oficial registrado correctamente');
-        console.log('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
+        console.log('✅ === REGISTRO COMPLETADO EXITOSAMENTE ===');
+        
+        // Recargar lista si está en la vista de lista
+        if (vistaActual === 'lista') {
+          console.log('🔄 Recargando lista de oficiales...');
+          cargarOficiales();
+        }
         
         // Recargar lista si está en la vista de lista
         if (vistaActual === 'lista') {
           cargarOficiales();
         }
       } else {
+        console.log('❌ Registro falló, result.success es false');
         // Mostrar mensaje específico del backend (para credenciales duplicadas, etc.)
         const mensajeError = result.message || 'No se pudo registrar el oficial';
-        console.error('=== ERROR EN REGISTRO ===');
-        console.error('Mensaje de error:', mensajeError);
+        console.error('❌ === ERROR EN REGISTRO ===');
+        console.error('❌ Mensaje de error:', mensajeError);
         
         if (mensajeError.toLowerCase().includes('credencial') || mensajeError.toLowerCase().includes('duplicad')) {
           Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
@@ -567,10 +580,11 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       }
     } catch (error: any) {
       // Manejar errores de red o del servidor
-      console.error('=== ERROR EN CATCH ===');
-      console.error('Error completo:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error stack:', error.stack);
+      console.error('❌ === ERROR EN CATCH ===');
+      console.error('❌ Error completo:', error);
+      console.error('❌ Error type:', typeof error);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error message:', error.message);
       
       const errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
       console.error('Mensaje de error final:', errorMessage);
@@ -585,7 +599,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         Alert.alert('Error', errorMessage);
       }
     } finally {
+      console.log('🏁 Finalizando handleSubmit, desactivando loading...');
       setLoading(false);
+      console.log('✅ Loading desactivado');
     }
   };
 
