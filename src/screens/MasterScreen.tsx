@@ -259,7 +259,7 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                     value={loginUsuario}
                     onChangeText={setLoginUsuario}
                     placeholder="Ingresa tu usuario"
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#666"
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
@@ -272,7 +272,7 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                     value={loginPassword}
                     onChangeText={setLoginPassword}
                     placeholder="Ingresa tu contraseña"
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#666"
                     secureTextEntry
                   />
                 </View>
@@ -724,6 +724,54 @@ const styles = StyleSheet.create({
   },
   loginForm: {
     width: '100%',
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 2,
+  },
+  input: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    borderRadius: 10,
+    padding: 15,
+    fontSize: 16,
+    color: '#000000',
+    fontWeight: '500',
+  },
+  loginButton: {
+    backgroundColor: '#00247D',
+    paddingVertical: 18,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 2,
+    borderColor: '#0033A0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  loginButtonDisabled: {
+    opacity: 0.6,
+  },
+  loginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
   crearButton: {
     backgroundColor: '#00247D',
