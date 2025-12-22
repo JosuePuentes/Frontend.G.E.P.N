@@ -210,5 +210,67 @@ export const verificarQR = async (qrData: string): Promise<{success: boolean; da
   }
 };
 
+// Funciones para Master
+export const crearUsuarioMaster = async (datos: {
+  usuario: string;
+  nombre: string;
+  email: string;
+  contraseña: string;
+  permisos: string[];
+}): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.post('/api/master/crear-usuario', datos);
+    return {success: response.data.success, message: response.data.message};
+  } catch (error: any) {
+    console.error('Error al crear usuario master:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al crear usuario master',
+    };
+  }
+};
+
+export const listarUsuariosMaster = async (): Promise<{success: boolean; data?: any[]}> => {
+  try {
+    const response = await api.get('/api/master/usuarios');
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.error('Error al listar usuarios master:', error);
+    return {success: false};
+  }
+};
+
+export const actualizarPermisosMaster = async (
+  usuarioId: string,
+  permisos: string[],
+): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.put(`/api/master/usuarios/${usuarioId}/permisos`, {permisos});
+    return {success: response.data.success, message: response.data.message};
+  } catch (error: any) {
+    console.error('Error al actualizar permisos:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al actualizar permisos',
+    };
+  }
+};
+
+export const obtenerModulos = async (): Promise<{success: boolean; data?: any[]}> => {
+  try {
+    const response = await api.get('/api/master/modulos');
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.error('Error al obtener módulos:', error);
+    return {success: false};
+  }
+};
+
 export default api;
 

@@ -20,6 +20,7 @@ import DashboardScreen from './src/screens/DashboardScreen';
 import DenunciaScreen from './src/screens/DenunciaScreen';
 import RRHHScreen from './src/screens/RRHHScreen';
 import QRScannerScreen from './src/screens/QRScannerScreen';
+import MasterScreen from './src/screens/MasterScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 export type RootStackParamList = {
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   Denuncia: undefined;
   RRHH: undefined;
   QRScanner: undefined;
+  Master: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -44,6 +46,7 @@ const linking = {
       Denuncia: 'denuncia',
       RRHH: 'rrhh',
       QRScanner: 'qr-scanner',
+      Master: 'master',
     },
   },
 };
@@ -75,6 +78,7 @@ const App = () => {
             <Stack.Screen name="Denuncia" component={DenunciaScreen} />
             <Stack.Screen name="RRHH" component={RRHHScreen} />
             <Stack.Screen name="QRScanner" component={QRScannerScreen} />
+            <Stack.Screen name="Master" component={MasterScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>
