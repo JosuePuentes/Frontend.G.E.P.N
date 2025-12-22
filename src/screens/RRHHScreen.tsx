@@ -16,12 +16,13 @@ import {
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
 import {estadosVenezuela, Estado, Municipio} from '../data/venezuelaData';
+import {getCiudadesByEstado} from '../data/ciudadesVenezuela';
 import {registrarOficial, generarQROficial} from '../services/apiService';
 
 // Importar imagen de fondo
 const backgroundImageStatic = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
 
-// Rangos policiales
+// Rangos policiales (17 opciones completas)
 const RANGOS = [
   'Oficial',
   'Primer Oficial',
@@ -35,17 +36,24 @@ const RANGOS = [
   'Comisario General',
   'Comisario Mayor',
   'Comisario Superior',
+  'Comisario General de Brigada',
+  'Comisario General de División',
+  'Comisario General Inspector',
+  'Comisario General en Jefe',
+  'Director General',
 ];
 
 // Tipos de sangre
 const TIPOS_SANGRE = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-// Colores de piel
+// Colores de piel válidos (sin "Indígena")
 const COLORES_PIEL = [
   'Blanco',
   'Negro',
+  'Moreno',
+  'Rubio',
+  'Trigueño',
   'Mestizo',
-  'Indígena',
   'Amarillo',
   'Otro',
 ];
@@ -110,6 +118,7 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   const [showEstadoPicker, setShowEstadoPicker] = useState(false);
   const [showMunicipioPicker, setShowMunicipioPicker] = useState(false);
   const [showParroquiaPicker, setShowParroquiaPicker] = useState(false);
+  const [showCiudadPicker, setShowCiudadPicker] = useState(false);
 
   // Obtener municipios del estado seleccionado
   const municipiosDisponibles = estadosVenezuela.find(e => e.id === estado)?.municipios || [];
@@ -117,6 +126,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   // Obtener parroquias del municipio seleccionado
   const parroquiasDisponibles =
     municipiosDisponibles.find(m => m.id === municipio)?.parroquias || [];
+
+  // Obtener ciudades del estado seleccionado (para ciudad de nacimiento)
+  const ciudadesDisponibles = estado ? getCiudadesByEstado(estado) : [];
 
   const handleImagePicker = (tipo: 'cara' | 'carnet') => {
     if (Platform.OS === 'web') {
@@ -149,32 +161,106 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
 
   const handleSubmit = async () => {
     // Validaciones
-    if (
-      !primerNombre.trim() ||
-      !primerApellido.trim() ||
-      !cedula.trim() ||
-      !contraseña.trim() ||
-      !fechaNacimiento.trim() ||
-      !estatura.trim() ||
-      !colorPiel ||
-      !tipoSangre ||
-      !ciudadNacimiento.trim() ||
-      !credencial.trim() ||
-      !rango ||
-      !destacado.trim() ||
-      !fechaGraduacion.trim() ||
-      !antiguedad.trim() ||
-      !estado ||
-      !municipio ||
-      !parroquia ||
-      !fotoCara
-    ) {
-      Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
+    // Validaciones de campos obligatorios
+    if (!primerNombre.trim()) {
+      Alert.alert('Error', 'El primer nombre es obligatorio');
+      return;
+    }
+    if (!primerApellido.trim()) {
+      Alert.alert('Error', 'El primer apellido es obligatorio');
+      return;
+    }
+    if (!cedula.trim()) {
+      Alert.alert('Error', 'La cédula es obligatoria');
+      return;
+    }
+    if (!contraseña.trim()) {
+      Alert.alert('Error', 'La contraseña es obligatoria');
+      return;
+    }
+    if (!fechaNacimiento.trim()) {
+      Alert.alert('Error', 'La fecha de nacimiento es obligatoria');
+      return;
+    }
+    if (!estatura.trim()) {
+      Alert.alert('Error', 'La estatura es obligatoria');
+      return;
+    }
+    if (!colorPiel) {
+      Alert.alert('Error', 'El color de piel es obligatorio');
+      return;
+    }
+    if (!tipoSangre) {
+      Alert.alert('Error', 'El tipo de sangre es obligatorio');
+      return;
+    }
+    if (!ciudadNacimiento.trim()) {
+      Alert.alert('Error', 'La ciudad de nacimiento es obligatoria. Por favor selecciona una ciudad del estado.');
+      return;
+    }
+    if (!estado) {
+      Alert.alert('Error', 'Debes seleccionar un estado para poder elegir la ciudad de nacimiento');
+      return;
+    }
+    if (!credencial.trim()) {
+      Alert.alert('Error', 'La credencial es obligatoria');
+      return;
+    }
+    if (!rango) {
+      Alert.alert('Error', 'El rango es obligatorio');
+      return;
+    }
+    if (!fechaGraduacion.trim()) {
+      Alert.alert('Error', 'La fecha de graduación es obligatoria');
+      return;
+    }
+    if (!antiguedad.trim()) {
+      Alert.alert('Error', 'La antigüedad es obligatoria');
+      return;
+    }
+    if (!estado) {
+      Alert.alert('Error', 'El estado es obligatorio');
+      return;
+    }
+    if (!municipio) {
+      Alert.alert('Error', 'El municipio es obligatorio');
+      return;
+    }
+    if (!parroquia) {
+      Alert.alert('Error', 'La parroquia es obligatoria');
+      return;
+    }
+    if (!fotoCara) {
+      Alert.alert('Error', 'La foto de cara es obligatoria');
       return;
     }
 
+    // Validación de contraseña
     if (contraseña.length < 6) {
       Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    // Validación de formato de fecha (YYYY-MM-DD)
+    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!fechaRegex.test(fechaNacimiento)) {
+      Alert.alert('Error', 'La fecha de nacimiento debe estar en formato YYYY-MM-DD');
+      return;
+    }
+    if (!fechaRegex.test(fechaGraduacion)) {
+      Alert.alert('Error', 'La fecha de graduación debe estar en formato YYYY-MM-DD');
+      return;
+    }
+
+    // Validación de números
+    const estaturaNum = parseFloat(estatura);
+    if (isNaN(estaturaNum) || estaturaNum <= 0) {
+      Alert.alert('Error', 'Por favor ingresa una estatura válida (número positivo)');
+      return;
+    }
+    const antiguedadNum = parseFloat(antiguedad);
+    if (isNaN(antiguedadNum) || antiguedadNum < 0) {
+      Alert.alert('Error', 'Por favor ingresa una antigüedad válida (número positivo)');
       return;
     }
 
@@ -195,7 +281,7 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         ciudadNacimiento: ciudadNacimiento.trim(),
         credencial: credencial.trim(),
         rango,
-        destacado: destacado.trim(),
+        destacado: destacado.trim() || '', // Campo destacado se deja vacío en RRHH
         fechaGraduacion: fechaGraduacion.trim(),
         antiguedad: parseFloat(antiguedad),
         estado: estadosVenezuela.find(e => e.id === estado)?.nombre || '',
@@ -240,7 +326,7 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setCiudadNacimiento('');
         setCredencial('');
         setRango('');
-        setDestacado('');
+        setDestacado(''); // Se deja vacío según instrucciones
         setFechaGraduacion('');
         setAntiguedad('');
         setLicenciaConducir('');
@@ -258,10 +344,29 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setFotoCara(null);
         setFotoCarnet(null);
       } else {
-        Alert.alert('Error', result.message || 'No se pudo registrar el oficial');
+        // Mostrar mensaje específico del backend (para credenciales duplicadas, etc.)
+        const mensajeError = result.message || 'No se pudo registrar el oficial';
+        if (mensajeError.toLowerCase().includes('credencial') || mensajeError.toLowerCase().includes('duplicad')) {
+          Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
+        } else if (mensajeError.toLowerCase().includes('cédula') || mensajeError.toLowerCase().includes('cedula')) {
+          Alert.alert('Error', 'La cédula ya está registrada. Por favor verifica los datos.');
+        } else {
+          Alert.alert('Error', mensajeError);
+        }
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Error al registrar el oficial');
+      // Manejar errores de red o del servidor
+      const errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
+      
+      if (errorMessage.toLowerCase().includes('credencial') || errorMessage.toLowerCase().includes('duplicad')) {
+        Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
+      } else if (errorMessage.toLowerCase().includes('cédula') || errorMessage.toLowerCase().includes('cedula')) {
+        Alert.alert('Error', 'La cédula ya está registrada. Por favor verifica los datos.');
+      } else if (error.message && error.message.includes('Network')) {
+        Alert.alert('Error de Conexión', 'Error de conexión. Por favor verifica tu conexión a internet');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -347,6 +452,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Contraseña *</Text>
+              <Text style={styles.helperText}>
+                (Esta contraseña se usará para el login en el módulo policial)
+              </Text>
               <TextInput
                 style={styles.input}
                 value={contraseña}
@@ -435,13 +543,38 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
               </View>
               <View style={styles.halfInput}>
                 <Text style={styles.label}>Ciudad de Nacimiento *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={ciudadNacimiento}
-                  onChangeText={setCiudadNacimiento}
-                  placeholder="Ciudad"
-                  placeholderTextColor="#999"
-                />
+                {estado ? (
+                  <>
+                    <TouchableOpacity
+                      style={styles.pickerButton}
+                      onPress={() => setShowCiudadPicker(!showCiudadPicker)}>
+                      <Text style={styles.pickerButtonText}>
+                        {ciudadNacimiento || 'Seleccionar ciudad'}
+                      </Text>
+                    </TouchableOpacity>
+                    {showCiudadPicker && (
+                      <View style={styles.pickerContainer}>
+                        <ScrollView nestedScrollEnabled style={{maxHeight: 200}}>
+                          {ciudadesDisponibles.map(ciudad => (
+                            <TouchableOpacity
+                              key={ciudad.id}
+                              style={styles.pickerOption}
+                              onPress={() => {
+                                setCiudadNacimiento(ciudad.nombre);
+                                setShowCiudadPicker(false);
+                              }}>
+                              <Text style={styles.pickerOptionText}>{ciudad.nombre}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>
+                    Primero selecciona un estado
+                  </Text>
+                )}
               </View>
             </View>
           </View>
@@ -489,12 +622,15 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Destacado *</Text>
+              <Text style={styles.label}>Destacado</Text>
+              <Text style={styles.helperText}>
+                (Opcional - Se asigna en otros módulos)
+              </Text>
               <TextInput
                 style={styles.input}
                 value={destacado}
                 onChangeText={setDestacado}
-                placeholder="Lugar de destacamento"
+                placeholder="Dejar vacío - se asigna en otros módulos"
                 placeholderTextColor="#999"
               />
             </View>
@@ -736,10 +872,11 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
                       key={est.id}
                       style={styles.pickerOption}
                       onPress={() => {
-                        setEstado(est.id);
-                        setMunicipio('');
-                        setParroquia('');
-                        setShowEstadoPicker(false);
+        setEstado(est.id);
+        setMunicipio('');
+        setParroquia('');
+        setCiudadNacimiento(''); // Limpiar ciudad cuando cambia el estado
+        setShowEstadoPicker(false);
                       }}>
                       <Text style={styles.pickerOptionText}>{est.nombre}</Text>
                     </TouchableOpacity>
@@ -1036,6 +1173,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#FF6B60',
     marginBottom: 15,
+    fontStyle: 'italic',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#D4AF37',
+    marginBottom: 5,
     fontStyle: 'italic',
   },
   hijoItem: {
