@@ -171,13 +171,30 @@ export const obtenerMisDenuncias = async (): Promise<any[]> => {
 // Funciones para RRHH
 export const registrarOficial = async (datosOficial: any): Promise<{success: boolean; message?: string}> => {
   try {
+    console.log('=== LLAMADA API registrarOficial ===');
+    console.log('URL:', api.defaults.baseURL + '/api/rrhh/registrar-oficial');
+    console.log('Datos enviados:', JSON.stringify(datosOficial, null, 2));
+    
     const response = await api.post('/api/rrhh/registrar-oficial', datosOficial);
+    console.log('Respuesta del servidor:', response.data);
+    console.log('Status:', response.status);
+    
     return {success: response.data.success, message: response.data.message};
   } catch (error: any) {
-    console.error('Error al registrar oficial:', error);
+    console.error('=== ERROR EN API ===');
+    console.error('Error completo:', error);
+    console.error('Error response:', error.response);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', error.response.data);
+    }
+    
     return {
       success: false,
-      message: error.response?.data?.message || 'Error al registrar oficial',
+      message: error.response?.data?.message || error.message || 'Error al registrar oficial',
     };
   }
 };

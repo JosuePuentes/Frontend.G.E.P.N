@@ -160,9 +160,24 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   };
 
   const handleSubmit = async () => {
+    console.log('=== INICIO handleSubmit ===');
+    console.log('Estado actual:', {
+      primerNombre,
+      primerApellido,
+      cedula,
+      credencial,
+      rango,
+      estado,
+      municipio,
+      parroquia,
+      ciudadNacimiento,
+      fotoCara: fotoCara ? 'Sí' : 'No',
+    });
+
     // Validaciones
     // Validaciones de campos obligatorios
     if (!primerNombre.trim()) {
+      console.log('Error: Primer nombre vacío');
       Alert.alert('Error', 'El primer nombre es obligatorio');
       return;
     }
@@ -264,7 +279,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       return;
     }
 
+    console.log('Todas las validaciones pasaron, iniciando registro...');
     setLoading(true);
+    console.log('Loading activado');
 
     try {
       // Preparar datos de hijos con formato correcto
@@ -320,11 +337,15 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
 
       console.log('Datos a enviar:', JSON.stringify(datosOficial, null, 2));
 
-      console.log('Enviando datos al backend...');
+      console.log('=== ENVIANDO DATOS AL BACKEND ===');
       const result = await registrarOficial(datosOficial);
-      console.log('Respuesta del backend:', result);
+      console.log('=== RESPUESTA RECIBIDA ===');
+      console.log('Result:', result);
+      console.log('Success:', result.success);
+      console.log('Message:', result.message);
       
       if (result.success) {
+        console.log('Registro exitoso, limpiando formulario...');
         // Limpiar formulario primero
         setPrimerNombre('');
         setSegundoNombre('');
@@ -390,11 +411,14 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setFotoCara(null);
         setFotoCarnet(null);
         
+        console.log('Mostrando mensaje de éxito...');
         Alert.alert('Éxito', 'Oficial registrado correctamente');
+        console.log('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
       } else {
         // Mostrar mensaje específico del backend (para credenciales duplicadas, etc.)
         const mensajeError = result.message || 'No se pudo registrar el oficial';
-        console.error('Error al registrar:', mensajeError);
+        console.error('=== ERROR EN REGISTRO ===');
+        console.error('Mensaje de error:', mensajeError);
         
         if (mensajeError.toLowerCase().includes('credencial') || mensajeError.toLowerCase().includes('duplicad')) {
           Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
@@ -406,8 +430,13 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       }
     } catch (error: any) {
       // Manejar errores de red o del servidor
+      console.error('=== ERROR EN CATCH ===');
       console.error('Error completo:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error stack:', error.stack);
+      
       const errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
+      console.error('Mensaje de error final:', errorMessage);
       
       if (errorMessage.toLowerCase().includes('credencial') || errorMessage.toLowerCase().includes('duplicad')) {
         Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
