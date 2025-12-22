@@ -210,6 +210,19 @@ export const verificarQR = async (qrData: string): Promise<{success: boolean; da
   }
 };
 
+export const listarOficiales = async (): Promise<{success: boolean; data?: any[]}> => {
+  try {
+    const response = await api.get('/api/rrhh/oficiales');
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.error('Error al listar oficiales:', error);
+    return {success: false};
+  }
+};
+
 // Funciones para Master
 export const loginMaster = async (
   usuario: string,
