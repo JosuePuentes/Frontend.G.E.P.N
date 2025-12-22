@@ -214,29 +214,42 @@ export const verificarQR = async (qrData: string): Promise<{success: boolean; da
 export const loginMaster = async (
   usuario: string,
   contraseña: string,
-): Promise<{success: boolean; token?: string; usuario?: any}> => {
+): Promise<{success: boolean; token?: string; master?: any; error?: string}> => {
   try {
     const response = await api.post('/api/master/login', {
       usuario,
       contraseña,
     });
 
-    if (response.data.success && response.data.token) {
+    if (response.data && response.data.token) {
       await AsyncStorage.setItem('masterToken', response.data.token);
-      await AsyncStorage.setItem('master_user', JSON.stringify(response.data.usuario));
+      await AsyncStorage.setItem('master_user', JSON.stringify(response.data.master));
       // También guardar en authToken para que el interceptor lo use
       await AsyncStorage.setItem('authToken', response.data.token);
+      
       return {
         success: true,
         token: response.data.token,
-        usuario: response.data.usuario,
+        master: response.data.master,
       };
     }
-    return {success: false};
-  } catch (error: any) {
-    console.error('Error en login master:', error);
+    
     return {
       success: false,
+      error: response.data?.error || 'Error desconocido',
+    };
+  } catch (error: any) {
+    console.error('Error en login master:', error);
+    if (error.response) {
+      return {
+        success: false,
+        error: error.response.data?.error || error.response.data?.mensaje || 'Error al iniciar sesión',
+      };
+    }
+    
+    return {
+      success: false,
+      error: 'Error de conexión',
     };
   }
 };

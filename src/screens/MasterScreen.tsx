@@ -108,8 +108,8 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
     setLoginLoading(true);
     try {
       const result = await loginMaster(loginUsuario.trim(), loginPassword);
-      if (result.success && result.usuario) {
-        setMasterUser(result.usuario);
+      if (result.success && result.master) {
+        setMasterUser(result.master);
         setIsAuthenticated(true);
         setShowLogin(false);
         setLoginUsuario('');
@@ -117,7 +117,7 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
         cargarUsuarios();
         Alert.alert('Éxito', 'Sesión iniciada correctamente');
       } else {
-        Alert.alert('Error', 'Usuario o contraseña incorrectos');
+        Alert.alert('Error', result.error || 'Usuario o contraseña incorrectos');
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Error al iniciar sesión');
