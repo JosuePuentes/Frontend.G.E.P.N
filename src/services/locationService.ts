@@ -1,14 +1,36 @@
 import {Platform, PermissionsAndroid, Alert} from 'react-native';
-import Geolocation from '@react-native-community/geolocation';
+
+// Importar Geolocation según la plataforma
+let Geolocation: any;
+if (Platform.OS === 'web') {
+  Geolocation = {
+    getCurrentPosition: (
+      success: (position: any) => void,
+      error: (error: any) => void,
+      options: any,
+    ) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error, options);
+      } else {
+        error({message: 'Geolocation no está soportado'});
+      }
+    },
+  };
+} else {
+  Geolocation = require('@react-native-community/geolocation').default;
+}
 
 export const requestLocationPermission = async (): Promise<boolean> => {
-  if (Platform.OS === 'android') {
+  if (Platform.OS === 'web') {
+    // En web, los permisos se solicitan automáticamente al usar getCurrentPosition
+    return true;
+  } else if (Platform.OS === 'android') {
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Permiso de Ubicación',
-          message: 'La aplicación necesita acceso a tu ubicación',
+          message: 'La aplicación necesita acceso a tu ubicación para el botón de pánico',
           buttonNeutral: 'Preguntar después',
           buttonNegative: 'Cancelar',
           buttonPositive: 'OK',

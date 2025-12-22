@@ -1,8 +1,9 @@
-import React from 'react';
-import {Platform, Linking} from 'react-native';
+import React, {useEffect} from 'react';
+import {Platform, Linking, Alert} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {requestLocationPermission} from './src/services/locationService';
 
 // Deshabilitar react-native-screens para web (causa problemas de renderizado)
 if (Platform.OS === 'web') {
@@ -53,6 +54,25 @@ const linking = {
 
 const App = () => {
   console.log('🎯 [App.tsx] Componente App renderizándose...');
+
+  // Solicitar permisos GPS al iniciar la app
+  useEffect(() => {
+    const solicitarPermisos = async () => {
+      try {
+        const tienePermiso = await requestLocationPermission();
+        if (!tienePermiso && Platform.OS !== 'web') {
+          Alert.alert(
+            'Permisos de Ubicación',
+            'La aplicación necesita acceso a tu ubicación para el botón de pánico. Puedes activarlo desde la configuración de tu dispositivo.',
+          );
+        }
+      } catch (error) {
+        console.error('Error al solicitar permisos GPS:', error);
+      }
+    };
+
+    solicitarPermisos();
+  }, []);
   
   try {
     console.log('🎯 [App.tsx] Creando ErrorBoundary...');

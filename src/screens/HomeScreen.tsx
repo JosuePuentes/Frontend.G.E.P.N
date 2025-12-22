@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,9 @@ import {
   ImageBackground,
   Alert,
   ActivityIndicator,
+  Animated,
+  Vibration,
+  Platform,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
@@ -22,6 +25,8 @@ import {
   getCiudadanoUser,
   logoutCiudadano,
 } from '../services/authService';
+import {activarPanico} from '../services/apiService';
+import {requestLocationPermission, getCurrentLocation} from '../services/locationService';
 
 // Importar imágenes estáticamente para que Webpack las procese
 // Usar require directo - Webpack lo procesará en tiempo de compilación
@@ -46,10 +51,32 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Verificar autenticación al cargar
+  // Estados para botón de pánico
+  const [panicPressed, setPanicPressed] = useState(false);
+  const [panicProgress, setPanicProgress] = useState(0);
+  const panicTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  // Verificar autenticación y solicitar permisos GPS al cargar
   useEffect(() => {
     checkAuth();
+    solicitarPermisosGPS();
   }, []);
+
+  const solicitarPermisosGPS = async () => {
+    try {
+      const tienePermiso = await requestLocationPermission();
+      if (!tienePermiso) {
+        Alert.alert(
+          'Permisos de Ubicación',
+          'La aplicación necesita acceso a tu ubicación para el botón de pánico. Puedes activarlo desde la configuración.',
+        );
+      }
+    } catch (error) {
+      console.error('Error al solicitar permisos GPS:', error);
+    }
+  };
 
   const checkAuth = async () => {
     const auth = await isCiudadanoAuthenticated();
@@ -170,6 +197,156 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     Alert.alert('Éxito', 'Sesión cerrada correctamente');
   };
 
+  const handlePanicPressIn = async () => {
+    // Verificar que el usuario esté autenticado
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Acceso Requerido',
+        'Debes iniciar sesión para usar el botón de pánico',
+        [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {
+            text: 'Iniciar Sesión',
+            onPress: () => setModalVisible(true),
+          },
+        ],
+      );
+      return;
+    }
+
+    setPanicPressed(true);
+    setPanicProgress(0);
+
+    // Animación de escala
+    Animated.spring(scaleAnim, {
+      toValue: 1.1,
+      useNativeDriver: true,
+    }).start();
+
+    // Actualizar progreso cada 100ms
+    progressIntervalRef.current = setInterval(() => {
+      setPanicProgress(prev => {
+        const newProgress = prev + 2; // 5 segundos = 5000ms, 100ms = 2%
+        if (newProgress >= 100) {
+          return 100;
+        }
+        return newProgress;
+      });
+    }, 100);
+
+    // Timer de 5 segundos
+    panicTimerRef.current = setTimeout(async () => {
+      await activarPanicoCompleto();
+    }, 5000);
+  };
+
+  const handlePanicPressOut = () => {
+    setPanicPressed(false);
+    setPanicProgress(0);
+
+    // Cancelar animación
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+
+    // Limpiar timers
+    if (panicTimerRef.current) {
+      clearTimeout(panicTimerRef.current);
+      panicTimerRef.current = null;
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
+
+  const activarPanicoCompleto = async () => {
+    try {
+      // Obtener ubicación GPS
+      const location = await getCurrentLocation();
+      const {latitude, longitude} = location;
+
+      // Obtener dirección aproximada (opcional)
+      const ubicacion = `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`;
+
+      // Activar pánico en el backend
+      const success = await activarPanico(latitude, longitude, ubicacion);
+
+      if (success) {
+        // Vibración
+        if (Platform.OS !== 'web') {
+          Vibration.vibrate([0, 500, 200, 500]); // Patrón de vibración
+        }
+
+        // Notificación
+        Alert.alert(
+          '🚨 ALERTA DE PÁNICO ACTIVADA',
+          'Tu alerta ha sido enviada a los oficiales de guardia. Ayuda en camino.',
+          [{text: 'OK'}],
+        );
+
+        // Reproducir sonido
+        if (Platform.OS === 'web') {
+          try {
+            // Crear un sonido de alerta usando Web Audio API
+            // @ts-ignore
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800; // Frecuencia de alerta
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+          } catch (error) {
+            console.error('Error al reproducir sonido:', error);
+          }
+        } else {
+          // En móvil, usar react-native-sound o similar si está disponible
+          // Por ahora, la vibración es suficiente
+        }
+      } else {
+        Alert.alert('Error', 'No se pudo activar la alerta. Intenta nuevamente.');
+      }
+    } catch (error) {
+      console.error('Error al activar pánico:', error);
+      Alert.alert(
+        'Error',
+        'No se pudo obtener tu ubicación. Verifica que los permisos de GPS estén activados.',
+      );
+    } finally {
+      setPanicPressed(false);
+      setPanicProgress(0);
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  // Limpiar timers al desmontar
+  useEffect(() => {
+    return () => {
+      if (panicTimerRef.current) {
+        clearTimeout(panicTimerRef.current);
+      }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {backgroundImage ? (
@@ -261,18 +438,45 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 </View>
               </TouchableOpacity>
 
-              {/* Botón de Acceso Policial */}
-              <TouchableOpacity
-                style={styles.policialButton}
-                onPress={() => {
-                  navigation.navigate('LoginPolicial');
-                }}
-                activeOpacity={0.7}>
-                <View style={styles.policialButtonContent}>
-                  <Text style={styles.policialIcon}>👮</Text>
-                  <Text style={styles.policialButtonText}>Acceso Policial</Text>
-                </View>
-              </TouchableOpacity>
+              {/* Botón de Pánico Circular */}
+              <View style={styles.panicContainer}>
+                <Animated.View style={{transform: [{scale: scaleAnim}]}}>
+                  <TouchableOpacity
+                    style={[
+                      styles.panicButton,
+                      panicPressed && styles.panicButtonPressed,
+                      !isAuthenticated && styles.panicButtonDisabled,
+                    ]}
+                    onPressIn={handlePanicPressIn}
+                    onPressOut={handlePanicPressOut}
+                    activeOpacity={0.8}
+                    disabled={!isAuthenticated}>
+                    <View style={styles.panicButtonInner}>
+                      <Text style={styles.panicButtonIcon}>🚨</Text>
+                      <Text style={styles.panicButtonText}>
+                        {panicPressed
+                          ? `Mantén presionado... ${Math.round(panicProgress)}%`
+                          : 'Botón de Pánico'}
+                      </Text>
+                      {panicPressed && (
+                        <View style={styles.progressBarContainer}>
+                          <View
+                            style={[
+                              styles.progressBar,
+                              {width: `${panicProgress}%`},
+                            ]}
+                          />
+                        </View>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+                {!isAuthenticated && (
+                  <Text style={styles.panicWarningText}>
+                    Inicia sesión para usar el botón de pánico
+                  </Text>
+                )}
+              </View>
 
               {/* Información adicional */}
               <View style={styles.infoContainer}>
@@ -378,18 +582,45 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                 </View>
               </TouchableOpacity>
 
-              {/* Botón de Acceso Policial */}
-              <TouchableOpacity
-                style={styles.policialButton}
-                onPress={() => {
-                  navigation.navigate('LoginPolicial');
-                }}
-                activeOpacity={0.7}>
-                <View style={styles.policialButtonContent}>
-                  <Text style={styles.policialIcon}>👮</Text>
-                  <Text style={styles.policialButtonText}>Acceso Policial</Text>
-                </View>
-              </TouchableOpacity>
+              {/* Botón de Pánico Circular */}
+              <View style={styles.panicContainer}>
+                <Animated.View style={{transform: [{scale: scaleAnim}]}}>
+                  <TouchableOpacity
+                    style={[
+                      styles.panicButton,
+                      panicPressed && styles.panicButtonPressed,
+                      !isAuthenticated && styles.panicButtonDisabled,
+                    ]}
+                    onPressIn={handlePanicPressIn}
+                    onPressOut={handlePanicPressOut}
+                    activeOpacity={0.8}
+                    disabled={!isAuthenticated}>
+                    <View style={styles.panicButtonInner}>
+                      <Text style={styles.panicButtonIcon}>🚨</Text>
+                      <Text style={styles.panicButtonText}>
+                        {panicPressed
+                          ? `Mantén presionado... ${Math.round(panicProgress)}%`
+                          : 'Botón de Pánico'}
+                      </Text>
+                      {panicPressed && (
+                        <View style={styles.progressBarContainer}>
+                          <View
+                            style={[
+                              styles.progressBar,
+                              {width: `${panicProgress}%`},
+                            ]}
+                          />
+                        </View>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+                {!isAuthenticated && (
+                  <Text style={styles.panicWarningText}>
+                    Inicia sesión para usar el botón de pánico
+                  </Text>
+                )}
+              </View>
 
               {/* Información adicional */}
               <View style={styles.infoContainer}>
@@ -875,39 +1106,76 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-  policialButton: {
+  panicContainer: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: '#00247D',
-    borderRadius: 16,
-    paddingVertical: 25,
-    paddingHorizontal: 30,
-    marginBottom: 20,
-    shadowColor: '#00247D',
+    alignItems: 'center',
+    marginBottom: 30,
+    marginTop: 20,
+  },
+  panicButton: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#FF3B30',
     shadowOffset: {
       width: 0,
       height: 8,
     },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.6,
     shadowRadius: 12,
     elevation: 15,
-    borderWidth: 2,
-    borderColor: '#0033A0',
+    borderWidth: 4,
+    borderColor: '#FF6B60',
   },
-  policialButtonContent: {
-    flexDirection: 'row',
+  panicButtonPressed: {
+    backgroundColor: '#CC2E24',
+    borderColor: '#FF3B30',
+  },
+  panicButtonDisabled: {
+    backgroundColor: '#666',
+    borderColor: '#888',
+    opacity: 0.5,
+  },
+  panicButtonInner: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    padding: 20,
   },
-  policialIcon: {
-    fontSize: 32,
-    marginRight: 15,
+  panicButtonIcon: {
+    fontSize: 64,
+    marginBottom: 10,
   },
-  policialButtonText: {
-    color: '#FFFFFF',
-    fontSize: 22,
+  panicButtonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
-    letterSpacing: 1.5,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  progressBarContainer: {
+    width: '80%',
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginTop: 10,
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 3,
+  },
+  panicWarningText: {
+    color: '#FF6B60',
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 
