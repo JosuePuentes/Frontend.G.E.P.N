@@ -281,7 +281,7 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         ciudadNacimiento: ciudadNacimiento.trim(),
         credencial: credencial.trim(),
         rango,
-        destacado: destacado.trim() || '', // Campo destacado se deja vacío en RRHH
+        destacado: '', // Campo destacado se deja vacío en RRHH (se asigna en otros módulos)
         fechaGraduacion: fechaGraduacion.trim(),
         antiguedad: parseFloat(antiguedad),
         estado: estadosVenezuela.find(e => e.id === estado)?.nombre || '',
@@ -499,17 +499,19 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
                 </TouchableOpacity>
                 {showColorPielPicker && (
                   <View style={styles.pickerContainer}>
-                    {COLORES_PIEL.map(color => (
-                      <TouchableOpacity
-                        key={color}
-                        style={styles.pickerOption}
-                        onPress={() => {
-                          setColorPiel(color);
-                          setShowColorPielPicker(false);
-                        }}>
-                        <Text style={styles.pickerOptionText}>{color}</Text>
-                      </TouchableOpacity>
-                    ))}
+                    <ScrollView nestedScrollEnabled style={{maxHeight: 200}}>
+                      {COLORES_PIEL.map(color => (
+                        <TouchableOpacity
+                          key={color}
+                          style={styles.pickerOption}
+                          onPress={() => {
+                            setColorPiel(color);
+                            setShowColorPielPicker(false);
+                          }}>
+                          <Text style={styles.pickerOptionText}>{color}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
                   </View>
                 )}
               </View>
@@ -527,17 +529,19 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
                 </TouchableOpacity>
                 {showTipoSangrePicker && (
                   <View style={styles.pickerContainer}>
-                    {TIPOS_SANGRE.map(tipo => (
-                      <TouchableOpacity
-                        key={tipo}
-                        style={styles.pickerOption}
-                        onPress={() => {
-                          setTipoSangre(tipo);
-                          setShowTipoSangrePicker(false);
-                        }}>
-                        <Text style={styles.pickerOptionText}>{tipo}</Text>
-                      </TouchableOpacity>
-                    ))}
+                    <ScrollView nestedScrollEnabled style={{maxHeight: 200}}>
+                      {TIPOS_SANGRE.map(tipo => (
+                        <TouchableOpacity
+                          key={tipo}
+                          style={styles.pickerOption}
+                          onPress={() => {
+                            setTipoSangre(tipo);
+                            setShowTipoSangrePicker(false);
+                          }}>
+                          <Text style={styles.pickerOptionText}>{tipo}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
                   </View>
                 )}
               </View>
@@ -606,17 +610,19 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
               </TouchableOpacity>
               {showRangoPicker && (
                 <View style={styles.pickerContainer}>
-                  {RANGOS.map(rangoItem => (
-                    <TouchableOpacity
-                      key={rangoItem}
-                      style={styles.pickerOption}
-                      onPress={() => {
-                        setRango(rangoItem);
-                        setShowRangoPicker(false);
-                      }}>
-                      <Text style={styles.pickerOptionText}>{rangoItem}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <ScrollView nestedScrollEnabled style={{maxHeight: 300}}>
+                    {RANGOS.map(rangoItem => (
+                      <TouchableOpacity
+                        key={rangoItem}
+                        style={styles.pickerOption}
+                        onPress={() => {
+                          setRango(rangoItem);
+                          setShowRangoPicker(false);
+                        }}>
+                        <Text style={styles.pickerOptionText}>{rangoItem}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
             </View>
@@ -624,13 +630,13 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Destacado</Text>
               <Text style={styles.helperText}>
-                (Opcional - Se asigna en otros módulos)
+                (Se asigna en otros módulos - Campo bloqueado)
               </Text>
               <TextInput
-                style={styles.input}
-                value={destacado}
-                onChangeText={setDestacado}
-                placeholder="Dejar vacío - se asigna en otros módulos"
+                style={[styles.input, styles.inputDisabled]}
+                value=""
+                editable={false}
+                placeholder="Este campo se asigna en otros módulos"
                 placeholderTextColor="#999"
               />
             </View>
@@ -1093,6 +1099,12 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 16,
     color: '#000000',
+  },
+  inputDisabled: {
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    borderColor: '#666666',
+    color: '#666666',
+    opacity: 0.6,
   },
   pickerButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
