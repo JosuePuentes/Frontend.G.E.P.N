@@ -328,8 +328,27 @@ const MasterScreen: React.FC<Props> = ({navigation}) => {
                   Usuario: <Text style={styles.userInfoBold}>@{masterUser.usuario}</Text>
                 </Text>
                 <Text style={styles.userInfoText}>
-                  Permisos: <Text style={styles.userInfoBold}>Todos los módulos</Text>
+                  Email: <Text style={styles.userInfoBold}>{masterUser.email}</Text>
                 </Text>
+                <View style={styles.permisosSection}>
+                  <Text style={styles.permisosLabel}>Módulos con Acceso:</Text>
+                  <View style={styles.permisosTags}>
+                    {masterUser.permisos && masterUser.permisos.length > 0 ? (
+                      masterUser.permisos.map((permiso: string) => {
+                        const modulo = MODULOS.find(m => m.id === permiso);
+                        return (
+                          <View key={permiso} style={styles.permisoTag}>
+                            <Text style={styles.permisoTagText}>
+                              {modulo?.nombre || permiso}
+                            </Text>
+                          </View>
+                        );
+                      })
+                    ) : (
+                      <Text style={styles.sinPermisos}>Sin módulos asignados</Text>
+                    )}
+                  </View>
+                </View>
               </View>
             )}
           </View>
