@@ -229,13 +229,29 @@ export const verificarQR = async (qrData: string): Promise<{success: boolean; da
 
 export const listarOficiales = async (): Promise<{success: boolean; data?: any[]}> => {
   try {
-    const response = await api.get('/api/rrhh/oficiales');
+    console.log('=== LLAMADA API listarOficiales ===');
+    const response = await api.get('/api/rrhh/listar-oficiales');
+    console.log('Respuesta listar oficiales:', response.data);
+    
+    // El backend puede retornar diferentes formatos
+    let oficiales = [];
+    if (response.data.success) {
+      if (response.data.data) {
+        if (Array.isArray(response.data.data)) {
+          oficiales = response.data.data;
+        } else if (response.data.data.oficiales) {
+          oficiales = response.data.data.oficiales;
+        }
+      }
+    }
+    
     return {
       success: response.data.success,
-      data: response.data.data,
+      data: oficiales,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al listar oficiales:', error);
+    console.error('Error response:', error.response);
     return {success: false};
   }
 };

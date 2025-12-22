@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
 import {estadosVenezuela, Estado, Municipio} from '../data/venezuelaData';
 import {getCiudadesByEstado} from '../data/ciudadesVenezuela';
-import {registrarOficial, generarQROficial} from '../services/apiService';
+import {registrarOficial, generarQROficial, listarOficiales} from '../services/apiService';
 
 // Importar imagen de fondo
 const backgroundImageStatic = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
@@ -120,6 +120,13 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   const [showParroquiaPicker, setShowParroquiaPicker] = useState(false);
   const [showCiudadPicker, setShowCiudadPicker] = useState(false);
 
+  // Estados para la lista de oficiales
+  const [vistaActual, setVistaActual] = useState<'registro' | 'lista'>('registro');
+  const [oficiales, setOficiales] = useState<any[]>([]);
+  const [oficialesFiltrados, setOficialesFiltrados] = useState<any[]>([]);
+  const [buscador, setBuscador] = useState('');
+  const [cargandoOficiales, setCargandoOficiales] = useState(false);
+
   // Obtener municipios del estado seleccionado
   const municipiosDisponibles = estadosVenezuela.find(e => e.id === estado)?.municipios || [];
 
@@ -129,6 +136,68 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
 
   // Obtener ciudades del estado seleccionado (para ciudad de nacimiento)
   const ciudadesDisponibles = estado ? getCiudadesByEstado(estado) : [];
+
+  // Función para cargar oficiales
+  const cargarOficiales = async () => {
+    setCargandoOficiales(true);
+    try {
+      const result = await listarOficiales();
+      if (result.success && result.data) {
+        // Si la respuesta tiene un objeto con oficiales, extraerlo
+        const listaOficiales = Array.isArray(result.data) 
+          ? result.data 
+          : (result.data.oficiales || result.data.data || []);
+        setOficiales(listaOficiales);
+        setOficialesFiltrados(listaOficiales);
+      } else {
+        Alert.alert('Error', 'No se pudieron cargar los oficiales');
+      }
+    } catch (error: any) {
+      console.error('Error al cargar oficiales:', error);
+      Alert.alert('Error', 'Error al cargar la lista de oficiales');
+    } finally {
+      setCargandoOficiales(false);
+    }
+  };
+
+  // Efecto para cargar oficiales cuando se cambia a la vista de lista
+  useEffect(() => {
+    if (vistaActual === 'lista') {
+      cargarOficiales();
+    }
+  }, [vistaActual]);
+
+  // Función para filtrar oficiales
+  useEffect(() => {
+    if (!buscador.trim()) {
+      setOficialesFiltrados(oficiales);
+      return;
+    }
+
+    const termino = buscador.toLowerCase().trim();
+    const filtrados = oficiales.filter(oficial => {
+      const nombreCompleto = `${oficial.primer_nombre || ''} ${oficial.segundo_nombre || ''} ${oficial.primer_apellido || ''} ${oficial.segundo_apellido || ''}`.toLowerCase();
+      const credencial = (oficial.credencial || '').toLowerCase();
+      const cedula = (oficial.cedula || '').toLowerCase();
+      
+      return nombreCompleto.includes(termino) || 
+             credencial.includes(termino) || 
+             cedula.includes(termino);
+    });
+    
+    setOficialesFiltrados(filtrados);
+  }, [buscador, oficiales]);
+
+  // Función para obtener nombre completo
+  const obtenerNombreCompleto = (oficial: any) => {
+    const partes = [
+      oficial.primer_nombre,
+      oficial.segundo_nombre,
+      oficial.primer_apellido,
+      oficial.segundo_apellido
+    ].filter(p => p && p.trim());
+    return partes.join(' ') || 'Sin nombre';
+  };
 
   const handleImagePicker = (tipo: 'cara' | 'carnet') => {
     if (Platform.OS === 'web') {
@@ -379,6 +448,11 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setFotoCarnet(null);
         
         Alert.alert('Éxito', 'Oficial registrado correctamente');
+        
+        // Recargar lista si está en la vista de lista
+        if (vistaActual === 'lista') {
+          cargarOficiales();
+        }
         // Limpiar formulario
         setPrimerNombre('');
         setSegundoNombre('');
@@ -414,6 +488,11 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         console.log('Mostrando mensaje de éxito...');
         Alert.alert('Éxito', 'Oficial registrado correctamente');
         console.log('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
+        
+        // Recargar lista si está en la vista de lista
+        if (vistaActual === 'lista') {
+          cargarOficiales();
+        }
       } else {
         // Mostrar mensaje específico del backend (para credenciales duplicadas, etc.)
         const mensajeError = result.message || 'No se pudo registrar el oficial';
@@ -464,9 +543,114 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={styles.title}>Registro de Oficiales</Text>
-            <Text style={styles.subtitle}>Recursos Humanos</Text>
+            <Text style={styles.title}>Recursos Humanos</Text>
+            <Text style={styles.subtitle}>Gestión de Oficiales</Text>
           </View>
+
+          {/* Botones de navegación */}
+          <View style={styles.navButtons}>
+            <TouchableOpacity
+              style={[styles.navButton, vistaActual === 'registro' && styles.navButtonActive]}
+              onPress={() => setVistaActual('registro')}>
+              <Text style={[styles.navButtonText, vistaActual === 'registro' && styles.navButtonTextActive]}>
+                Registrar Oficial
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.navButton, vistaActual === 'lista' && styles.navButtonActive]}
+              onPress={() => setVistaActual('lista')}>
+              <Text style={[styles.navButtonText, vistaActual === 'lista' && styles.navButtonTextActive]}>
+                Lista de Oficiales
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Vista de Lista de Oficiales */}
+          {vistaActual === 'lista' && (
+            <View style={styles.listaContainer}>
+              {/* Buscador */}
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={styles.searchInput}
+                  value={buscador}
+                  onChangeText={setBuscador}
+                  placeholder="Buscar por nombre, credencial o cédula..."
+                  placeholderTextColor="#999"
+                />
+                <TouchableOpacity
+                  style={styles.refreshButton}
+                  onPress={cargarOficiales}
+                  disabled={cargandoOficiales}>
+                  <Text style={styles.refreshButtonText}>🔄</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Información de resultados */}
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoText}>
+                  {oficialesFiltrados.length} oficial{oficialesFiltrados.length !== 1 ? 'es' : ''} encontrado{oficialesFiltrados.length !== 1 ? 's' : ''}
+                  {buscador.trim() && ` (de ${oficiales.length} total)`}
+                </Text>
+              </View>
+
+              {/* Tabla de oficiales */}
+              {cargandoOficiales ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#D4AF37" />
+                  <Text style={styles.loadingText}>Cargando oficiales...</Text>
+                </View>
+              ) : oficialesFiltrados.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>
+                    {buscador.trim() ? 'No se encontraron oficiales con ese criterio' : 'No hay oficiales registrados'}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.tableContainer}>
+                  {/* Encabezado de la tabla */}
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.tableHeaderCell, {flex: 2}]}>Nombre Completo</Text>
+                    <Text style={[styles.tableHeaderCell, {flex: 1.2}]}>Credencial</Text>
+                    <Text style={[styles.tableHeaderCell, {flex: 1.2}]}>Cédula</Text>
+                    <Text style={[styles.tableHeaderCell, {flex: 1.2}]}>Rango</Text>
+                    <Text style={[styles.tableHeaderCell, {flex: 1}]}>Estado</Text>
+                  </View>
+
+                  {/* Filas de la tabla */}
+                  <ScrollView style={styles.tableBody} nestedScrollEnabled>
+                    {oficialesFiltrados.map((oficial, index) => (
+                      <View
+                        key={oficial.id || oficial._id || index}
+                        style={[
+                          styles.tableRow,
+                          index % 2 === 0 && styles.tableRowEven
+                        ]}>
+                        <Text style={[styles.tableCell, {flex: 2}]} numberOfLines={1}>
+                          {obtenerNombreCompleto(oficial)}
+                        </Text>
+                        <Text style={[styles.tableCell, {flex: 1.2}]} numberOfLines={1}>
+                          {oficial.credencial || 'N/A'}
+                        </Text>
+                        <Text style={[styles.tableCell, {flex: 1.2}]} numberOfLines={1}>
+                          {oficial.cedula || 'N/A'}
+                        </Text>
+                        <Text style={[styles.tableCell, {flex: 1.2}]} numberOfLines={1}>
+                          {oficial.rango || 'N/A'}
+                        </Text>
+                        <Text style={[styles.tableCell, {flex: 1}]} numberOfLines={1}>
+                          {oficial.activo !== false ? 'Activo' : 'Inactivo'}
+                        </Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Vista de Registro de Oficial */}
+          {vistaActual === 'registro' && (
+            <>
 
           {/* Datos Personales */}
           <View style={styles.section}>
@@ -1090,6 +1274,8 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
               <Text style={styles.submitButtonText}>Registrar Oficial</Text>
             )}
           </TouchableOpacity>
+            </>
+          )}
         </ScrollView>
       </ImageBackground>
     </SafeAreaView>
@@ -1353,6 +1539,149 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
     fontSize: 14,
     fontWeight: '600',
+  },
+  // Estilos para navegación
+  navButtons: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    backgroundColor: 'rgba(26, 26, 26, 0.85)',
+    borderRadius: 12,
+    padding: 5,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  navButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  navButtonActive: {
+    backgroundColor: '#00247D',
+    borderWidth: 1,
+    borderColor: '#0033A0',
+  },
+  navButtonText: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  navButtonTextActive: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  // Estilos para lista de oficiales
+  listaContainer: {
+    flex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 1,
+    borderColor: '#D4AF37',
+    borderRadius: 8,
+    padding: 15,
+    fontSize: 16,
+    color: '#000000',
+  },
+  refreshButton: {
+    backgroundColor: '#00247D',
+    paddingHorizontal: 20,
+    marginLeft: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#0033A0',
+  },
+  refreshButtonText: {
+    fontSize: 20,
+    color: '#FFFFFF',
+  },
+  infoContainer: {
+    backgroundColor: 'rgba(26, 26, 26, 0.85)',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  infoText: {
+    color: '#D4AF37',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(26, 26, 26, 0.85)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  emptyText: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  tableContainer: {
+    backgroundColor: 'rgba(26, 26, 26, 0.85)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+    overflow: 'hidden',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#00247D',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: '#0033A0',
+  },
+  tableHeaderCell: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  tableBody: {
+    maxHeight: 500,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  tableRowEven: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  },
+  tableCell: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    textAlign: 'center',
+    paddingHorizontal: 5,
   },
 });
 
