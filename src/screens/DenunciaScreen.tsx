@@ -34,6 +34,8 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
   const [cedulaDenunciante, setCedulaDenunciante] = useState('');
   const [telefonoDenunciante, setTelefonoDenunciante] = useState('');
   const [fechaNacimiento, setFechaNacimiento] = useState('');
+  const [estadoDenunciante, setEstadoDenunciante] = useState('');
+  const [municipioDenunciante, setMunicipioDenunciante] = useState('');
   const [parroquiaDenunciante, setParroquiaDenunciante] = useState('');
 
   // Datos de la denuncia
@@ -48,6 +50,15 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
   const [municipioDenunciado, setMunicipioDenunciado] = useState('');
   const [parroquiaDenunciado, setParroquiaDenunciado] = useState('');
 
+  // Estados y municipios para el denunciante
+  const municipiosDisponiblesDenunciante = estadoDenunciante
+    ? getMunicipiosByEstado(estadoDenunciante)
+    : [];
+  const parroquiasDisponiblesDenunciante =
+    estadoDenunciante && municipioDenunciante
+      ? getParroquiasByMunicipio(estadoDenunciante, municipioDenunciante)
+      : [];
+
   // Estados y municipios para el denunciado
   const municipiosDisponibles = estadoDenunciado
     ? getMunicipiosByEstado(estadoDenunciado)
@@ -57,7 +68,12 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
       ? getParroquiasByMunicipio(estadoDenunciado, municipioDenunciado)
       : [];
 
-  // Estados para modales de selección
+  // Estados para modales de selección del denunciante
+  const [showEstadoModalDenunciante, setShowEstadoModalDenunciante] = useState(false);
+  const [showMunicipioModalDenunciante, setShowMunicipioModalDenunciante] = useState(false);
+  const [showParroquiaModalDenunciante, setShowParroquiaModalDenunciante] = useState(false);
+
+  // Estados para modales de selección del denunciado
   const [showEstadoModal, setShowEstadoModal] = useState(false);
   const [showMunicipioModal, setShowMunicipioModal] = useState(false);
   const [showParroquiaModal, setShowParroquiaModal] = useState(false);
@@ -69,6 +85,8 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
       !cedulaDenunciante.trim() ||
       !telefonoDenunciante.trim() ||
       !fechaNacimiento.trim() ||
+      !estadoDenunciante ||
+      !municipioDenunciante ||
       !parroquiaDenunciante.trim() ||
       !motivo.trim() ||
       !hechos.trim()
@@ -99,6 +117,8 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
         cedula: cedulaDenunciante,
         telefono: telefonoDenunciante,
         fechaNacimiento,
+        estado: estadosVenezuela.find(e => e.id === estadoDenunciante)?.nombre || '',
+        municipio: municipiosDisponiblesDenunciante.find(m => m.id === municipioDenunciante)?.nombre || '',
         parroquia: parroquiaDenunciante,
       },
       denuncia: {
@@ -194,16 +214,161 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Parroquia *</Text>
-            <TextInput
-              style={styles.input}
-              value={parroquiaDenunciante}
-              onChangeText={setParroquiaDenunciante}
-              placeholder="Ingresa tu parroquia"
-              placeholderTextColor="#999"
-            />
+            <Text style={styles.label}>Estado *</Text>
+            <TouchableOpacity
+              style={styles.selectButton}
+              onPress={() => setShowEstadoModalDenunciante(true)}>
+              <Text
+                style={[
+                  styles.selectButtonText,
+                  !estadoDenunciante && styles.selectButtonPlaceholder,
+                ]}>
+                {estadoDenunciante
+                  ? estadosVenezuela.find(e => e.id === estadoDenunciante)
+                      ?.nombre
+                  : 'Selecciona un estado'}
+              </Text>
+              <Text style={styles.selectArrow}>▼</Text>
+            </TouchableOpacity>
           </View>
+
+          {estadoDenunciante && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Municipio *</Text>
+              <TouchableOpacity
+                style={styles.selectButton}
+                onPress={() => setShowMunicipioModalDenunciante(true)}>
+                <Text
+                  style={[
+                    styles.selectButtonText,
+                    !municipioDenunciante && styles.selectButtonPlaceholder,
+                  ]}>
+                  {municipioDenunciante
+                    ? municipiosDisponiblesDenunciante.find(
+                        m => m.id === municipioDenunciante,
+                      )?.nombre
+                    : 'Selecciona un municipio'}
+                </Text>
+                <Text style={styles.selectArrow}>▼</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {municipioDenunciante && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Parroquia *</Text>
+              <TouchableOpacity
+                style={styles.selectButton}
+                onPress={() => setShowParroquiaModalDenunciante(true)}>
+                <Text
+                  style={[
+                    styles.selectButtonText,
+                    !parroquiaDenunciante && styles.selectButtonPlaceholder,
+                  ]}>
+                  {parroquiaDenunciante || 'Selecciona una parroquia'}
+                </Text>
+                <Text style={styles.selectArrow}>▼</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
+
+        {/* Modales de Selección del Denunciante */}
+        <Modal
+          visible={showEstadoModalDenunciante}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowEstadoModalDenunciante(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Seleccionar Estado</Text>
+                <TouchableOpacity
+                  onPress={() => setShowEstadoModalDenunciante(false)}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.modalList}>
+                {estadosVenezuela.map(estado => (
+                  <TouchableOpacity
+                    key={estado.id}
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setEstadoDenunciante(estado.id);
+                      setMunicipioDenunciante('');
+                      setParroquiaDenunciante('');
+                      setShowEstadoModalDenunciante(false);
+                    }}>
+                    <Text style={styles.modalItemText}>{estado.nombre}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={showMunicipioModalDenunciante}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowMunicipioModalDenunciante(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Seleccionar Municipio</Text>
+                <TouchableOpacity
+                  onPress={() => setShowMunicipioModalDenunciante(false)}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.modalList}>
+                {municipiosDisponiblesDenunciante.map(municipio => (
+                  <TouchableOpacity
+                    key={municipio.id}
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setMunicipioDenunciante(municipio.id);
+                      setParroquiaDenunciante('');
+                      setShowMunicipioModalDenunciante(false);
+                    }}>
+                    <Text style={styles.modalItemText}>{municipio.nombre}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={showParroquiaModalDenunciante}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowParroquiaModalDenunciante(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Seleccionar Parroquia</Text>
+                <TouchableOpacity
+                  onPress={() => setShowParroquiaModalDenunciante(false)}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.modalList}>
+                {parroquiasDisponiblesDenunciante.map((parroquia, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setParroquiaDenunciante(parroquia);
+                      setShowParroquiaModalDenunciante(false);
+                    }}>
+                    <Text style={styles.modalItemText}>{parroquia}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
         {/* Datos de la Denuncia */}
         <View style={styles.section}>
