@@ -4,9 +4,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Configurar la URL base de tu backend
 // Para desarrollo local: 'http://localhost:8080'
 // Para producción: 'https://backend-g-e-p-n.onrender.com'
-const API_BASE_URL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:8080'
-  : 'https://backend-g-e-p-n.onrender.com';
+const getApiBaseUrl = () => {
+  // En web, verificar si estamos en localhost
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8080';
+    }
+  }
+  // Para producción o cuando no es localhost
+  return 'https://backend-g-e-p-n.onrender.com';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+console.log('🌐 API_BASE_URL configurada:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -171,30 +182,55 @@ export const obtenerMisDenuncias = async (): Promise<any[]> => {
 // Funciones para RRHH
 export const registrarOficial = async (datosOficial: any): Promise<{success: boolean; message?: string}> => {
   try {
-    console.log('=== LLAMADA API registrarOficial ===');
-    console.log('URL:', api.defaults.baseURL + '/api/rrhh/registrar-oficial');
-    console.log('Datos enviados:', JSON.stringify(datosOficial, null, 2));
+    const urlCompleta = api.defaults.baseURL + '/api/rrhh/registrar-oficial';
+    console.log('🚀 === LLAMADA API registrarOficial ===');
+    console.log('🌐 Base URL:', api.defaults.baseURL);
+    console.log('🔗 URL completa:', urlCompleta);
+    console.log('📦 Datos a enviar:', JSON.stringify(datosOficial, null, 2));
+    console.log('📏 Tamaño de datos:', JSON.stringify(datosOficial).length, 'caracteres');
     
+    // Verificar si foto_cara está presente
+    if (datosOficial.foto_cara) {
+      const fotoSize = datosOficial.foto_cara.length;
+      console.log('📸 Foto de cara presente, tamaño:', fotoSize, 'caracteres');
+    } else {
+      console.warn('⚠️ Foto de cara NO está presente en los datos');
+    }
+    
+    console.log('⏳ Enviando petición POST...');
     const response = await api.post('/api/rrhh/registrar-oficial', datosOficial);
-    console.log('Respuesta del servidor:', response.data);
-    console.log('Status:', response.status);
+    console.log('✅ === RESPUESTA RECIBIDA ===');
+    console.log('✅ Status:', response.status);
+    console.log('✅ Data:', response.data);
+    console.log('✅ Success:', response.data.success);
+    console.log('✅ Message:', response.data.message);
     
     return {success: response.data.success, message: response.data.message};
   } catch (error: any) {
-    console.error('=== ERROR EN API ===');
-    console.error('Error completo:', error);
-    console.error('Error response:', error.response);
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
+    console.error('❌ === ERROR EN API ===');
+    console.error('❌ Error completo:', error);
+    console.error('❌ Error type:', typeof error);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error code:', error.code);
     
     if (error.response) {
-      console.error('Status:', error.response.status);
-      console.error('Data:', error.response.data);
+      console.error('❌ Response status:', error.response.status);
+      console.error('❌ Response data:', error.response.data);
+      console.error('❌ Response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('❌ Request enviada pero sin respuesta');
+      console.error('❌ Request:', error.request);
+    } else {
+      console.error('❌ Error al configurar la petición');
     }
+    
+    const errorMessage = error.response?.data?.message || error.message || 'Error al registrar oficial';
+    console.error('❌ Mensaje de error final:', errorMessage);
     
     return {
       success: false,
-      message: error.response?.data?.message || error.message || 'Error al registrar oficial',
+      message: errorMessage,
     };
   }
 };
