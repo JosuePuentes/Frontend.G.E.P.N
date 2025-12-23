@@ -12,6 +12,7 @@ import {
   ImageBackground,
   Image,
   Platform,
+  Modal,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
@@ -127,6 +128,10 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   const [oficialesFiltrados, setOficialesFiltrados] = useState<any[]>([]);
   const [buscador, setBuscador] = useState('');
   const [cargandoOficiales, setCargandoOficiales] = useState(false);
+
+  // Estado para modal de confirmación
+  const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
+  const [oficialRegistrado, setOficialRegistrado] = useState<any>(null);
 
   // Obtener municipios del estado seleccionado
   const municipiosDisponibles = estadosVenezuela.find(e => e.id === estado)?.municipios || [];
@@ -294,117 +299,162 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     });
 
     // Validaciones
+    console.log('🔍 Iniciando validaciones...');
     // Validaciones de campos obligatorios
     if (!primerNombre.trim()) {
-      console.log('Error: Primer nombre vacío');
+      console.log('❌ Error: Primer nombre vacío');
       Alert.alert('Error', 'El primer nombre es obligatorio');
       return;
     }
+    console.log('✅ Primer nombre válido');
     if (!primerApellido.trim()) {
+      console.log('❌ Error: Primer apellido vacío');
       Alert.alert('Error', 'El primer apellido es obligatorio');
       return;
     }
+    console.log('✅ Primer apellido válido');
     if (!cedula.trim()) {
+      console.log('❌ Error: Cédula vacía');
       Alert.alert('Error', 'La cédula es obligatoria');
       return;
     }
+    console.log('✅ Cédula válida');
     if (!contraseña.trim()) {
+      console.log('❌ Error: Contraseña vacía');
       Alert.alert('Error', 'La contraseña es obligatoria');
       return;
     }
+    console.log('✅ Contraseña válida');
     if (!fechaNacimiento.trim()) {
+      console.log('❌ Error: Fecha de nacimiento vacía');
       Alert.alert('Error', 'La fecha de nacimiento es obligatoria');
       return;
     }
+    console.log('✅ Fecha de nacimiento válida');
     if (!estatura.trim()) {
+      console.log('❌ Error: Estatura vacía');
       Alert.alert('Error', 'La estatura es obligatoria');
       return;
     }
+    console.log('✅ Estatura válida');
     if (!colorPiel) {
+      console.log('❌ Error: Color de piel no seleccionado');
       Alert.alert('Error', 'El color de piel es obligatorio');
       return;
     }
+    console.log('✅ Color de piel válido');
     if (!tipoSangre) {
+      console.log('❌ Error: Tipo de sangre no seleccionado');
       Alert.alert('Error', 'El tipo de sangre es obligatorio');
       return;
     }
+    console.log('✅ Tipo de sangre válido');
     if (!ciudadNacimiento.trim()) {
+      console.log('❌ Error: Ciudad de nacimiento vacía');
       Alert.alert('Error', 'La ciudad de nacimiento es obligatoria. Por favor selecciona una ciudad del estado.');
       return;
     }
+    console.log('✅ Ciudad de nacimiento válida');
     if (!estado) {
+      console.log('❌ Error: Estado no seleccionado');
       Alert.alert('Error', 'Debes seleccionar un estado para poder elegir la ciudad de nacimiento');
       return;
     }
+    console.log('✅ Estado válido');
     if (!credencial.trim()) {
+      console.log('❌ Error: Credencial vacía');
       Alert.alert('Error', 'La credencial es obligatoria');
       return;
     }
+    console.log('✅ Credencial válida');
     if (!rango) {
+      console.log('❌ Error: Rango no seleccionado');
       Alert.alert('Error', 'El rango es obligatorio');
       return;
     }
+    console.log('✅ Rango válido');
     if (!fechaGraduacion.trim()) {
+      console.log('❌ Error: Fecha de graduación vacía');
       Alert.alert('Error', 'La fecha de graduación es obligatoria');
       return;
     }
+    console.log('✅ Fecha de graduación válida');
     if (!antiguedad.trim()) {
+      console.log('❌ Error: Antigüedad vacía');
       Alert.alert('Error', 'La antigüedad es obligatoria');
       return;
     }
-    if (!estado) {
-      Alert.alert('Error', 'El estado es obligatorio');
-      return;
-    }
+    console.log('✅ Antigüedad válida');
     if (!municipio) {
+      console.log('❌ Error: Municipio no seleccionado');
       Alert.alert('Error', 'El municipio es obligatorio');
       return;
     }
+    console.log('✅ Municipio válido');
     if (!parroquia) {
+      console.log('❌ Error: Parroquia no seleccionada');
       Alert.alert('Error', 'La parroquia es obligatoria');
       return;
     }
+    console.log('✅ Parroquia válida');
     if (!fotoCara) {
+      console.log('❌ Error: Foto de cara no seleccionada');
       Alert.alert('Error', 'La foto de cara es obligatoria');
       return;
     }
+    console.log('✅ Foto de cara válida');
 
     // Validación de contraseña
+    console.log('🔍 Validando contraseña...');
     if (contraseña.length < 6) {
+      console.log('❌ Error: Contraseña muy corta');
       Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
+    console.log('✅ Contraseña válida (longitud)');
 
     // Validación de fechas
+    console.log('🔍 Validando fechas...');
     const errorFechaNac = validarFecha(fechaNacimiento, 'La fecha de nacimiento');
     if (errorFechaNac) {
+      console.log('❌ Error en fecha de nacimiento:', errorFechaNac);
       Alert.alert('Error', errorFechaNac);
       return;
     }
+    console.log('✅ Fecha de nacimiento válida');
 
     const errorFechaGrad = validarFecha(fechaGraduacion, 'La fecha de graduación');
     if (errorFechaGrad) {
+      console.log('❌ Error en fecha de graduación:', errorFechaGrad);
       Alert.alert('Error', errorFechaGrad);
       return;
     }
+    console.log('✅ Fecha de graduación válida');
 
     const errorRelacionFechas = validarFechaGraduacion(fechaNacimiento, fechaGraduacion);
     if (errorRelacionFechas) {
+      console.log('❌ Error en relación de fechas:', errorRelacionFechas);
       Alert.alert('Error', errorRelacionFechas);
       return;
     }
+    console.log('✅ Relación de fechas válida');
 
     // Validación de números
+    console.log('🔍 Validando números...');
     const estaturaNum = parseFloat(estatura);
     if (isNaN(estaturaNum) || estaturaNum <= 0) {
+      console.log('❌ Error: Estatura inválida');
       Alert.alert('Error', 'Por favor ingresa una estatura válida (número positivo)');
       return;
     }
+    console.log('✅ Estatura válida:', estaturaNum);
     const antiguedadNum = parseFloat(antiguedad);
     if (isNaN(antiguedadNum) || antiguedadNum < 0) {
+      console.log('❌ Error: Antigüedad inválida');
       Alert.alert('Error', 'Por favor ingresa una antigüedad válida (número positivo)');
       return;
     }
+    console.log('✅ Antigüedad válida:', antiguedadNum);
 
     console.log('✅ Todas las validaciones pasaron, iniciando registro...');
     setLoading(true);
@@ -510,20 +560,33 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setFotoCara(null);
         setFotoCarnet(null);
         
-        console.log('📢 Mostrando alerta de éxito...');
-        Alert.alert(
-          'Éxito',
-          'Oficial registrado correctamente',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                console.log('✅ Usuario cerró el alert de éxito');
-              },
-            },
-          ]
-        );
-        console.log('✅ Alerta de éxito mostrada');
+        // Calcular edad
+        const calcularEdad = (fechaNac: string): number => {
+          const hoy = new Date();
+          const nacimiento = new Date(fechaNac);
+          let edad = hoy.getFullYear() - nacimiento.getFullYear();
+          const mes = hoy.getMonth() - nacimiento.getMonth();
+          if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+          }
+          return edad;
+        };
+
+        const edad = calcularEdad(fechaNacimiento);
+        const nombreCompleto = `${primerNombre} ${segundoNombre || ''} ${primerApellido} ${segundoApellido || ''}`.trim();
+
+        // Guardar datos del oficial registrado para el modal
+        setOficialRegistrado({
+          nombreCompleto,
+          cedula,
+          credencial,
+          edad,
+          rango,
+        });
+
+        console.log('📢 Mostrando modal de confirmación...');
+        setShowModalConfirmacion(true);
+        console.log('✅ Modal de confirmación mostrado');
         console.log('✅ === REGISTRO COMPLETADO EXITOSAMENTE ===');
         
         // Recargar lista si está en la vista de lista
@@ -1329,6 +1392,66 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             </>
           )}
         </ScrollView>
+
+        {/* Modal de Confirmación de Registro */}
+        <Modal
+          visible={showModalConfirmacion}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowModalConfirmacion(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>✅ Oficial Registrado Exitosamente</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowModalConfirmacion(false);
+                    setOficialRegistrado(null);
+                  }}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {oficialRegistrado && (
+                <View style={styles.modalBody}>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalLabel}>Nombre Completo:</Text>
+                    <Text style={styles.modalValue}>{oficialRegistrado.nombreCompleto}</Text>
+                  </View>
+                  
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalLabel}>Cédula:</Text>
+                    <Text style={styles.modalValue}>{oficialRegistrado.cedula}</Text>
+                  </View>
+                  
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalLabel}>Credencial:</Text>
+                    <Text style={styles.modalValue}>{oficialRegistrado.credencial}</Text>
+                  </View>
+                  
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalLabel}>Edad:</Text>
+                    <Text style={styles.modalValue}>{oficialRegistrado.edad} años</Text>
+                  </View>
+                  
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalLabel}>Rango:</Text>
+                    <Text style={styles.modalValue}>{oficialRegistrado.rango}</Text>
+                  </View>
+                </View>
+              )}
+              
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowModalConfirmacion(false);
+                  setOficialRegistrado(null);
+                }}>
+                <Text style={styles.modalButtonText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1734,6 +1857,88 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 5,
+  },
+  // Estilos para modal de confirmación
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    padding: 25,
+    width: '90%',
+    maxWidth: 500,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#D4AF37',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#D4AF37',
+    flex: 1,
+  },
+  modalClose: {
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    paddingHorizontal: 10,
+  },
+  modalBody: {
+    marginBottom: 20,
+  },
+  modalInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  modalLabel: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    fontWeight: '600',
+    flex: 1,
+  },
+  modalValue: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    flex: 2,
+    textAlign: 'right',
+  },
+  modalButton: {
+    backgroundColor: '#00247D',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#0033A0',
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
