@@ -509,13 +509,17 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       console.log('✅ Hijos formateados:', hijosFormateados);
 
       console.log('📦 Preparando datos del oficial...');
+      console.log('🔑 Contraseña capturada (longitud):', contraseña.length, 'caracteres');
+      console.log('🔑 Contraseña presente:', !!contraseña);
+      console.log('🔑 Contraseña (primeros 3 caracteres ocultos):', contraseña.substring(0, 3) + '***');
+      
       const datosOficial = {
         primer_nombre: primerNombre.trim(),
         segundo_nombre: segundoNombre.trim() || null,
         primer_apellido: primerApellido.trim(),
         segundo_apellido: segundoApellido.trim() || null,
         cedula: cedula.trim(),
-        contraseña,
+        contraseña: contraseña.trim(), // Asegurar que se envíe con el nombre exacto "contraseña"
         fecha_nacimiento: fechaNacimiento,
         estatura: parseFloat(estatura),
         color_piel: colorPiel,
@@ -550,6 +554,17 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
           hijos: hijosFormateados,
         },
       };
+      
+      // Verificar que el campo contraseña esté presente en el objeto
+      console.log('🔍 Verificando campo contraseña en datosOficial...');
+      console.log('🔑 "contraseña" en datosOficial:', 'contraseña' in datosOficial);
+      console.log('🔑 Valor de contraseña en objeto:', datosOficial.contraseña ? 'PRESENTE (' + datosOficial.contraseña.length + ' caracteres)' : 'AUSENTE');
+      console.log('🔑 Claves del objeto datosOficial:', Object.keys(datosOficial));
+      console.log('📦 JSON completo (sin foto_cara):', JSON.stringify({
+        ...datosOficial,
+        foto_cara: datosOficial.foto_cara ? '[BASE64_IMAGE]' : null,
+        foto_carnet: datosOficial.foto_carnet ? '[BASE64_IMAGE]' : null,
+      }, null, 2));
 
       console.log('📤 Datos a enviar:', JSON.stringify(datosOficial, null, 2));
 
