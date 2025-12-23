@@ -211,27 +211,52 @@ export const registrarOficial = async (datosOficial: any): Promise<{success: boo
     console.error('❌ Error completo:', error);
     console.error('❌ Error type:', typeof error);
     console.error('❌ Error name:', error.name);
+    
+    // Capturar el mensaje de error del backend
+    if (error.response) {
+      const errorMessage = error.response.data?.error || 
+                          error.response.data?.message || 
+                          error.response.data?.msg ||
+                          'Error al registrar oficial';
+      
+      console.error('❌ Error del servidor:', error.response.data);
+      console.error('❌ Status code:', error.response.status);
+      console.error('❌ Mensaje de error capturado:', errorMessage);
+      
+      // Lanzar el error con el mensaje específico para que el catch en RRHHScreen lo capture
+      const customError: any = new Error(errorMessage);
+      customError.response = error.response;
+      throw customError;
+    }
     console.error('❌ Error message:', error.message);
     console.error('❌ Error code:', error.code);
     
+    // Capturar el mensaje de error del backend
     if (error.response) {
       console.error('❌ Response status:', error.response.status);
       console.error('❌ Response data:', error.response.data);
       console.error('❌ Response headers:', error.response.headers);
+      
+      // Capturar el mensaje de error del backend (prioridad: error > message > msg)
+      const errorMessage = error.response.data?.error || 
+                          error.response.data?.message || 
+                          error.response.data?.msg ||
+                          'Error al registrar oficial';
+      
+      console.error('❌ Error del servidor capturado:', errorMessage);
+      
+      // Lanzar el error con el mensaje específico para que el catch en RRHHScreen lo capture
+      const customError: any = new Error(errorMessage);
+      customError.response = error.response;
+      throw customError;
     } else if (error.request) {
       console.error('❌ Request enviada pero sin respuesta');
       console.error('❌ Request:', error.request);
+      throw new Error('Error de conexión. No se recibió respuesta del servidor.');
     } else {
       console.error('❌ Error al configurar la petición');
+      throw error; // Re-lanzar el error original
     }
-    
-    const errorMessage = error.response?.data?.message || error.message || 'Error al registrar oficial';
-    console.error('❌ Mensaje de error final:', errorMessage);
-    
-    return {
-      success: false,
-      message: errorMessage,
-    };
   }
 };
 

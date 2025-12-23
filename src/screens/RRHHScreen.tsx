@@ -317,15 +317,24 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       return;
     }
     console.log('✅ Primer apellido válido');
+    // Validación de cédula (obligatorio)
     if (!cedula.trim()) {
       console.log('❌ Error: Cédula vacía');
-      Alert.alert('Error', 'La cédula es obligatoria');
+      const errorMsg = 'La cédula es obligatoria y no puede estar vacía';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorMsg);
       return;
     }
     console.log('✅ Cédula válida');
+    
+    // Validación de contraseña (obligatorio, mínimo 6 caracteres)
     if (!contraseña.trim()) {
       console.log('❌ Error: Contraseña vacía');
-      Alert.alert('Error', 'La contraseña es obligatoria');
+      const errorMsg = 'La contraseña es obligatoria';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorMsg);
       return;
     }
     console.log('✅ Contraseña válida');
@@ -365,21 +374,35 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       return;
     }
     console.log('✅ Estado válido');
+    // Validación de credencial (obligatorio)
     if (!credencial.trim()) {
       console.log('❌ Error: Credencial vacía');
-      Alert.alert('Error', 'La credencial es obligatoria');
+      const errorMsg = 'La credencial es obligatoria y no puede estar vacía';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorMsg);
       return;
     }
     console.log('✅ Credencial válida');
+    
+    // Validación de rango (obligatorio)
     if (!rango) {
       console.log('❌ Error: Rango no seleccionado');
-      Alert.alert('Error', 'El rango es obligatorio');
+      const errorMsg = 'El rango es obligatorio. Debe ser uno de los rangos válidos';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorMsg);
       return;
     }
     console.log('✅ Rango válido');
+    
+    // Validación de fecha de graduación (obligatorio, formato YYYY-MM-DD)
     if (!fechaGraduacion.trim()) {
       console.log('❌ Error: Fecha de graduación vacía');
-      Alert.alert('Error', 'La fecha de graduación es obligatoria');
+      const errorMsg = 'La fecha de graduación es obligatoria (formato: YYYY-MM-DD)';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorMsg);
       return;
     }
     console.log('✅ Fecha de graduación válida');
@@ -649,26 +672,38 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       console.error('❌ Error stack:', error.stack);
       console.error('❌ Error message:', error.message);
       
-      let errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
-      console.error('Mensaje de error final:', errorMessage);
+      let errorMessage = 'Error al registrar el oficial';
       
-      // Normalizar mensajes de error
-      const mensajeLower = errorMessage.toLowerCase();
-      
-      if (mensajeLower.includes('credencial') && (mensajeLower.includes('duplicad') || mensajeLower.includes('ya existe') || mensajeLower.includes('existe'))) {
-        errorMessage = 'La credencial ya está registrada. Por favor usa otra credencial.';
-      } else if (mensajeLower.includes('cédula') || (mensajeLower.includes('cedula') && (mensajeLower.includes('duplicad') || mensajeLower.includes('ya existe') || mensajeLower.includes('existe')))) {
-        errorMessage = 'La cédula ya está registrada. Por favor verifica los datos.';
-      } else if (error.message && (error.message.includes('Network') || error.message.includes('timeout') || error.message.includes('ECONNREFUSED'))) {
-        errorMessage = 'Error de conexión. Por favor verifica tu conexión a internet y que el servidor esté disponible.';
-      } else if (error.response?.status === 400) {
-        errorMessage = 'Error en los datos enviados: ' + (errorMessage || 'Por favor verifica todos los campos');
-      } else if (error.response?.status === 401 || error.response?.status === 403) {
-        errorMessage = 'No tienes permisos para realizar esta acción.';
-      } else if (error.response?.status === 500) {
-        errorMessage = 'Error en el servidor. Por favor intenta nuevamente más tarde.';
+      if (error.response) {
+        // Capturar el mensaje de error del backend
+        errorMessage = error.response.data?.error || 
+                      error.response.data?.message || 
+                      error.response.data?.msg ||
+                      'Error al registrar oficial';
+        
+        console.error('❌ Error del servidor:', error.response.data);
+        console.error('❌ Status code:', error.response.status);
+        console.error('❌ Mensaje de error capturado:', errorMessage);
+        
+        // Si es un error 400, mostrar el mensaje específico del backend
+        if (error.response.status === 400) {
+          // El backend ya retorna mensajes claros, usarlos directamente
+          console.error('❌ Error 400 - Datos inválidos:', errorMessage);
+        } else if (error.response.status === 401 || error.response.status === 403) {
+          errorMessage = 'No tienes permisos para realizar esta acción.';
+        } else if (error.response.status === 500) {
+          errorMessage = errorMessage || 'Error en el servidor. Por favor intenta nuevamente más tarde.';
+        }
+      } else if (error.message) {
+        // Error de red o conexión
+        if (error.message.includes('Network') || error.message.includes('timeout') || error.message.includes('ECONNREFUSED')) {
+          errorMessage = 'Error de conexión. Por favor verifica tu conexión a internet y que el servidor esté disponible.';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
+      console.error('❌ Mensaje de error final a mostrar:', errorMessage);
       setErrorMessage(errorMessage);
       setShowErrorModal(true);
       Alert.alert('Error al Registrar', errorMessage);
