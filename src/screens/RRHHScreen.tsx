@@ -510,43 +510,26 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
         setFotoCara(null);
         setFotoCarnet(null);
         
-        Alert.alert('Éxito', 'Oficial registrado correctamente');
+        console.log('📢 Mostrando alerta de éxito...');
+        Alert.alert(
+          'Éxito',
+          'Oficial registrado correctamente',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                console.log('✅ Usuario cerró el alert de éxito');
+              },
+            },
+          ]
+        );
+        console.log('✅ Alerta de éxito mostrada');
         
         // Recargar lista si está en la vista de lista
         if (vistaActual === 'lista') {
+          console.log('🔄 Recargando lista de oficiales...');
           cargarOficiales();
         }
-        // Limpiar formulario
-        setPrimerNombre('');
-        setSegundoNombre('');
-        setPrimerApellido('');
-        setSegundoApellido('');
-        setCedula('');
-        setContraseña('');
-        setFechaNacimiento('');
-        setEstatura('');
-        setColorPiel('');
-        setTipoSangre('');
-        setCiudadNacimiento('');
-        setCredencial('');
-        setRango('');
-        setDestacado(''); // Se deja vacío según instrucciones
-        setFechaGraduacion('');
-        setAntiguedad('');
-        setLicenciaConducir('');
-        setCarnetMedico('');
-        setPadreNombre('');
-        setPadreCedula('');
-        setMadreNombre('');
-        setMadreCedula('');
-        setEsposaNombre('');
-        setEsposaCedula('');
-        setHijos([]);
-        setEstado('');
-        setMunicipio('');
-        setParroquia('');
-        setFotoCara(null);
-        setFotoCarnet(null);
         
         console.log('Mostrando mensaje de éxito...');
         console.log('📢 Mostrando alerta de éxito...');
@@ -1347,7 +1330,10 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
           {/* Botón de Enviar */}
           <TouchableOpacity
             style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-            onPress={handleSubmit}
+            onPress={() => {
+              console.log('🖱️ Botón "Registrar Oficial" presionado');
+              handleSubmit();
+            }}
             disabled={loading}>
             {loading ? (
               <ActivityIndicator color="#fff" />
