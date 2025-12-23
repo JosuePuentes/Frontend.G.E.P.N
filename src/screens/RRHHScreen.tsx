@@ -133,6 +133,10 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
   const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
   const [oficialRegistrado, setOficialRegistrado] = useState<any>(null);
 
+  // Estado para mensajes de error
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
   // Obtener municipios del estado seleccionado
   const municipiosDisponibles = estadosVenezuela.find(e => e.id === estado)?.municipios || [];
 
@@ -408,7 +412,10 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     console.log('🔍 Validando contraseña...');
     if (contraseña.length < 6) {
       console.log('❌ Error: Contraseña muy corta');
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      const errorMsg = 'La contraseña debe tener al menos 6 caracteres';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorMsg);
       return;
     }
     console.log('✅ Contraseña válida (longitud)');
@@ -418,7 +425,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     const errorFechaNac = validarFecha(fechaNacimiento, 'La fecha de nacimiento');
     if (errorFechaNac) {
       console.log('❌ Error en fecha de nacimiento:', errorFechaNac);
-      Alert.alert('Error', errorFechaNac);
+      setErrorMessage(errorFechaNac);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorFechaNac);
       return;
     }
     console.log('✅ Fecha de nacimiento válida');
@@ -426,7 +435,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     const errorFechaGrad = validarFecha(fechaGraduacion, 'La fecha de graduación');
     if (errorFechaGrad) {
       console.log('❌ Error en fecha de graduación:', errorFechaGrad);
-      Alert.alert('Error', errorFechaGrad);
+      setErrorMessage(errorFechaGrad);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorFechaGrad);
       return;
     }
     console.log('✅ Fecha de graduación válida');
@@ -434,7 +445,9 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
     const errorRelacionFechas = validarFechaGraduacion(fechaNacimiento, fechaGraduacion);
     if (errorRelacionFechas) {
       console.log('❌ Error en relación de fechas:', errorRelacionFechas);
-      Alert.alert('Error', errorRelacionFechas);
+      setErrorMessage(errorRelacionFechas);
+      setShowErrorModal(true);
+      Alert.alert('Error de Validación', errorRelacionFechas);
       return;
     }
     console.log('✅ Relación de fechas válida');
@@ -597,17 +610,36 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       } else {
         console.log('❌ Registro falló, result.success es false');
         // Mostrar mensaje específico del backend (para credenciales duplicadas, etc.)
-        const mensajeError = result.message || 'No se pudo registrar el oficial';
+        let mensajeError = result.message || 'No se pudo registrar el oficial';
         console.error('❌ === ERROR EN REGISTRO ===');
         console.error('❌ Mensaje de error:', mensajeError);
         
-        if (mensajeError.toLowerCase().includes('credencial') || mensajeError.toLowerCase().includes('duplicad')) {
-          Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
-        } else if (mensajeError.toLowerCase().includes('cédula') || mensajeError.toLowerCase().includes('cedula')) {
-          Alert.alert('Error', 'La cédula ya está registrada. Por favor verifica los datos.');
-        } else {
-          Alert.alert('Error', mensajeError);
+        // Normalizar mensajes de error comunes
+        const mensajeLower = mensajeError.toLowerCase();
+        
+        if (mensajeLower.includes('credencial') && (mensajeLower.includes('duplicad') || mensajeLower.includes('ya existe') || mensajeLower.includes('existe'))) {
+          mensajeError = 'La credencial ya está registrada. Por favor usa otra credencial.';
+        } else if (mensajeLower.includes('cédula') || (mensajeLower.includes('cedula') && (mensajeLower.includes('duplicad') || mensajeLower.includes('ya existe') || mensajeLower.includes('existe')))) {
+          mensajeError = 'La cédula ya está registrada. Por favor verifica los datos.';
+        } else if (mensajeLower.includes('contraseña') || mensajeLower.includes('password')) {
+          if (mensajeLower.includes('corta') || mensajeLower.includes('mínimo') || mensajeLower.includes('min')) {
+            mensajeError = 'La contraseña debe tener al menos 6 caracteres.';
+          } else {
+            mensajeError = 'Error en la contraseña: ' + mensajeError;
+          }
+        } else if (mensajeLower.includes('fecha')) {
+          if (mensajeLower.includes('nacimiento')) {
+            mensajeError = 'Error en la fecha de nacimiento: ' + mensajeError;
+          } else if (mensajeLower.includes('graduación') || mensajeLower.includes('graduacion')) {
+            mensajeError = 'Error en la fecha de graduación: ' + mensajeError;
+          } else {
+            mensajeError = 'Error en las fechas: ' + mensajeError;
+          }
         }
+        
+        setErrorMessage(mensajeError);
+        setShowErrorModal(true);
+        Alert.alert('Error al Registrar', mensajeError);
       }
     } catch (error: any) {
       // Manejar errores de red o del servidor
@@ -617,18 +649,29 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
       console.error('❌ Error stack:', error.stack);
       console.error('❌ Error message:', error.message);
       
-      const errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
+      let errorMessage = error.response?.data?.message || error.message || 'Error al registrar el oficial';
       console.error('Mensaje de error final:', errorMessage);
       
-      if (errorMessage.toLowerCase().includes('credencial') || errorMessage.toLowerCase().includes('duplicad')) {
-        Alert.alert('Error', 'La credencial ya está registrada. Por favor usa otra credencial.');
-      } else if (errorMessage.toLowerCase().includes('cédula') || errorMessage.toLowerCase().includes('cedula')) {
-        Alert.alert('Error', 'La cédula ya está registrada. Por favor verifica los datos.');
-      } else if (error.message && (error.message.includes('Network') || error.message.includes('timeout'))) {
-        Alert.alert('Error de Conexión', 'Error de conexión. Por favor verifica tu conexión a internet');
-      } else {
-        Alert.alert('Error', errorMessage);
+      // Normalizar mensajes de error
+      const mensajeLower = errorMessage.toLowerCase();
+      
+      if (mensajeLower.includes('credencial') && (mensajeLower.includes('duplicad') || mensajeLower.includes('ya existe') || mensajeLower.includes('existe'))) {
+        errorMessage = 'La credencial ya está registrada. Por favor usa otra credencial.';
+      } else if (mensajeLower.includes('cédula') || (mensajeLower.includes('cedula') && (mensajeLower.includes('duplicad') || mensajeLower.includes('ya existe') || mensajeLower.includes('existe')))) {
+        errorMessage = 'La cédula ya está registrada. Por favor verifica los datos.';
+      } else if (error.message && (error.message.includes('Network') || error.message.includes('timeout') || error.message.includes('ECONNREFUSED'))) {
+        errorMessage = 'Error de conexión. Por favor verifica tu conexión a internet y que el servidor esté disponible.';
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Error en los datos enviados: ' + (errorMessage || 'Por favor verifica todos los campos');
+      } else if (error.response?.status === 401 || error.response?.status === 403) {
+        errorMessage = 'No tienes permisos para realizar esta acción.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Error en el servidor. Por favor intenta nuevamente más tarde.';
       }
+      
+      setErrorMessage(errorMessage);
+      setShowErrorModal(true);
+      Alert.alert('Error al Registrar', errorMessage);
     } finally {
       console.log('🏁 Finalizando handleSubmit, desactivando loading...');
       setLoading(false);
@@ -1452,6 +1495,46 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
             </View>
           </View>
         </Modal>
+
+        {/* Modal de Error */}
+        <Modal
+          visible={showErrorModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => {
+            setShowErrorModal(false);
+            setErrorMessage(null);
+          }}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, styles.modalErrorContent]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, styles.modalErrorTitle]}>❌ Error al Registrar</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowErrorModal(false);
+                    setErrorMessage(null);
+                  }}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {errorMessage && (
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalErrorText}>{errorMessage}</Text>
+                </View>
+              )}
+              
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalErrorButton]}
+                onPress={() => {
+                  setShowErrorModal(false);
+                  setErrorMessage(null);
+                }}>
+                <Text style={styles.modalButtonText}>Entendido</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1939,6 +2022,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  // Estilos para modal de error
+  modalErrorContent: {
+    borderColor: '#FF6B60',
+  },
+  modalErrorTitle: {
+    color: '#FF6B60',
+  },
+  modalErrorText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    paddingVertical: 10,
+  },
+  modalErrorButton: {
+    backgroundColor: '#FF6B60',
+    borderColor: '#FF4444',
   },
 });
 
