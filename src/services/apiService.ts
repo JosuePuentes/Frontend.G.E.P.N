@@ -214,25 +214,6 @@ export const registrarOficial = async (datosOficial: any): Promise<{success: boo
     
     // Capturar el mensaje de error del backend
     if (error.response) {
-      const errorMessage = error.response.data?.error || 
-                          error.response.data?.message || 
-                          error.response.data?.msg ||
-                          'Error al registrar oficial';
-      
-      console.error('❌ Error del servidor:', error.response.data);
-      console.error('❌ Status code:', error.response.status);
-      console.error('❌ Mensaje de error capturado:', errorMessage);
-      
-      // Lanzar el error con el mensaje específico para que el catch en RRHHScreen lo capture
-      const customError: any = new Error(errorMessage);
-      customError.response = error.response;
-      throw customError;
-    }
-    console.error('❌ Error message:', error.message);
-    console.error('❌ Error code:', error.code);
-    
-    // Capturar el mensaje de error del backend
-    if (error.response) {
       console.error('❌ Response status:', error.response.status);
       console.error('❌ Response data:', error.response.data);
       console.error('❌ Response headers:', error.response.headers);
@@ -254,6 +235,8 @@ export const registrarOficial = async (datosOficial: any): Promise<{success: boo
       console.error('❌ Request:', error.request);
       throw new Error('Error de conexión. No se recibió respuesta del servidor.');
     } else {
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error code:', error.code);
       console.error('❌ Error al configurar la petición');
       throw error; // Re-lanzar el error original
     }
