@@ -524,26 +524,11 @@ const RRHHScreen: React.FC<Props> = ({navigation}) => {
           ]
         );
         console.log('✅ Alerta de éxito mostrada');
-        
-        // Recargar lista si está en la vista de lista
-        if (vistaActual === 'lista') {
-          console.log('🔄 Recargando lista de oficiales...');
-          cargarOficiales();
-        }
-        
-        console.log('Mostrando mensaje de éxito...');
-        console.log('📢 Mostrando alerta de éxito...');
-        Alert.alert('Éxito', 'Oficial registrado correctamente');
         console.log('✅ === REGISTRO COMPLETADO EXITOSAMENTE ===');
         
         // Recargar lista si está en la vista de lista
         if (vistaActual === 'lista') {
           console.log('🔄 Recargando lista de oficiales...');
-          cargarOficiales();
-        }
-        
-        // Recargar lista si está en la vista de lista
-        if (vistaActual === 'lista') {
           cargarOficiales();
         }
       } else {
