@@ -159,23 +159,98 @@ export const loginCiudadano = async (
 };
 
 // Funciones para denuncias
-export const crearDenuncia = async (datosDenuncia: any): Promise<boolean> => {
+export const crearDenuncia = async (datosDenuncia: any): Promise<{success: boolean; message?: string; data?: any}> => {
   try {
     const response = await api.post('/api/denuncia/crear', datosDenuncia);
-    return response.data.success;
-  } catch (error) {
+    return {
+      success: response.data.success || false,
+      message: response.data.message,
+      data: response.data.data,
+    };
+  } catch (error: any) {
     console.error('Error al crear denuncia:', error);
-    return false;
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al crear denuncia',
+    };
   }
 };
 
-export const obtenerMisDenuncias = async (): Promise<any[]> => {
+export const obtenerMisDenuncias = async (): Promise<{success: boolean; data?: any[]}> => {
   try {
     const response = await api.get('/api/denuncia/mis-denuncias');
-    return response.data.success ? response.data.data : [];
+    return {
+      success: response.data.success || false,
+      data: response.data.success ? response.data.data : [],
+    };
   } catch (error) {
     console.error('Error al obtener denuncias:', error);
-    return [];
+    return {success: false, data: []};
+  }
+};
+
+// Listar denuncias (usuarios del sistema con permiso "denuncias")
+export const listarDenuncias = async (
+  page: number = 1,
+  limit: number = 20,
+  estado?: string,
+): Promise<{success: boolean; data?: any[]; total?: number; page?: number; totalPages?: number}> => {
+  try {
+    const params: any = {page, limit};
+    if (estado) {
+      params.estado = estado;
+    }
+    const response = await api.get('/api/denuncia/listar', {params});
+    return {
+      success: response.data.success || false,
+      data: response.data.data || [],
+      total: response.data.total,
+      page: response.data.page,
+      totalPages: response.data.totalPages,
+    };
+  } catch (error: any) {
+    console.error('Error al listar denuncias:', error);
+    return {
+      success: false,
+      data: [],
+    };
+  }
+};
+
+// Obtener detalle de denuncia (usuarios del sistema)
+export const obtenerDenuncia = async (id: string): Promise<{success: boolean; data?: any; message?: string}> => {
+  try {
+    const response = await api.get('/api/denuncia/obtener', {params: {id}});
+    return {
+      success: response.data.success || false,
+      data: response.data.data,
+    };
+  } catch (error: any) {
+    console.error('Error al obtener denuncia:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al obtener denuncia',
+    };
+  }
+};
+
+// Actualizar estado de denuncia (usuarios del sistema)
+export const actualizarEstadoDenuncia = async (
+  id: string,
+  estado: string,
+): Promise<{success: boolean; message?: string}> => {
+  try {
+    const response = await api.put('/api/denuncia/actualizar-estado', {id, estado});
+    return {
+      success: response.data.success || false,
+      message: response.data.message,
+    };
+  } catch (error: any) {
+    console.error('Error al actualizar estado de denuncia:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Error al actualizar estado',
+    };
   }
 };
 

@@ -10,6 +10,7 @@ import {
   Alert,
   Modal,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../../App';
@@ -18,6 +19,7 @@ import {
   getMunicipiosByEstado,
   getParroquiasByMunicipio,
 } from '../data/venezuelaData';
+import {crearDenuncia} from '../services/apiService';
 
 type DenunciaScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -77,8 +79,9 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
   const [showEstadoModal, setShowEstadoModal] = useState(false);
   const [showMunicipioModal, setShowMunicipioModal] = useState(false);
   const [showParroquiaModal, setShowParroquiaModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validación básica
     if (
       !nombreDenunciante.trim() ||
@@ -110,7 +113,7 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
       }
     }
 
-    // Aquí se enviaría la denuncia al backend
+    // Preparar datos para enviar al backend
     const denunciaData = {
       denunciante: {
         nombre: nombreDenunciante,
@@ -126,27 +129,45 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
         hechos,
       },
       denunciado: {
-        nombre: nombreDenunciado,
+        nombre: nombreDenunciado || undefined,
         ...(tieneMasDetalles && {
           direccion: direccionDenunciado,
-          estado: estadoDenunciado,
-          municipio: municipioDenunciado,
+          estado: estadosVenezuela.find(e => e.id === estadoDenunciado)?.nombre || '',
+          municipio: municipiosDisponibles.find(m => m.id === municipioDenunciado)?.nombre || '',
           parroquia: parroquiaDenunciado,
         }),
       },
     };
 
-    console.log('Datos de denuncia:', denunciaData);
-    Alert.alert(
-      'Éxito',
-      'Denuncia registrada correctamente. Se procesará en breve.',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ],
-    );
+    setLoading(true);
+    try {
+      const resultado = await crearDenuncia(denunciaData);
+      setLoading(false);
+      
+      if (resultado.success) {
+        Alert.alert(
+          'Éxito',
+          resultado.message || 'Denuncia registrada correctamente. Se procesará en breve.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.goBack(),
+            },
+          ],
+        );
+      } else {
+        Alert.alert(
+          'Error',
+          resultado.message || 'No se pudo registrar la denuncia. Por favor intenta nuevamente.',
+        );
+      }
+    } catch (error: any) {
+      setLoading(false);
+      Alert.alert(
+        'Error',
+        error.message || 'Ocurrió un error al registrar la denuncia. Por favor intenta nuevamente.',
+      );
+    }
   };
 
   return (
@@ -643,10 +664,15 @@ const DenunciaScreen: React.FC<Props> = ({navigation}) => {
 
         {/* Botón de Enviar */}
         <TouchableOpacity
-          style={styles.submitButton}
+          style={[styles.submitButton, loading && styles.submitButtonDisabled]}
           onPress={handleSubmit}
-          activeOpacity={0.8}>
-          <Text style={styles.submitButtonText}>Enviar Denuncia</Text>
+          activeOpacity={0.8}
+          disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.submitButtonText}>Enviar Denuncia</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -842,6 +868,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
   },
 });
 

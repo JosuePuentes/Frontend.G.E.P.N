@@ -23,6 +23,9 @@ import RRHHScreen from './src/screens/RRHHScreen';
 import QRScannerScreen from './src/screens/QRScannerScreen';
 import MasterScreen from './src/screens/MasterScreen';
 import CentroCoordinacionScreen from './src/screens/CentroCoordinacionScreen';
+import ListadoDenunciasScreen from './src/screens/ListadoDenunciasScreen';
+import DetalleDenunciaScreen from './src/screens/DetalleDenunciaScreen';
+import MisDenunciasScreen from './src/screens/MisDenunciasScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 export type RootStackParamList = {
@@ -34,6 +37,9 @@ export type RootStackParamList = {
   QRScanner: undefined;
   Master: undefined;
   CentroCoordinacion: undefined;
+  ListadoDenuncias: undefined;
+  DetalleDenuncia: {denunciaId: string};
+  MisDenuncias: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -51,6 +57,9 @@ const linking = {
           QRScanner: 'qr-scanner',
           Master: 'master',
           CentroCoordinacion: 'centro-coordinacion',
+          ListadoDenuncias: 'denuncias/listado',
+          DetalleDenuncia: 'denuncias/:denunciaId',
+          MisDenuncias: 'denuncias/mis-denuncias',
         },
   },
 };
@@ -103,6 +112,9 @@ const App = () => {
             <Stack.Screen name="QRScanner" component={QRScannerScreen} />
             <Stack.Screen name="Master" component={MasterScreen} />
             <Stack.Screen name="CentroCoordinacion" component={CentroCoordinacionScreen} />
+            <Stack.Screen name="ListadoDenuncias" component={ListadoDenunciasScreen} />
+            <Stack.Screen name="DetalleDenuncia" component={DetalleDenunciaScreen} />
+            <Stack.Screen name="MisDenuncias" component={MisDenunciasScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>
