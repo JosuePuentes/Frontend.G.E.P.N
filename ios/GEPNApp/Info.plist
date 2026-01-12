@@ -39,6 +39,8 @@
 	<string>Esta aplicación necesita acceso a tu ubicación para funciones de seguridad y seguimiento.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Esta aplicación necesita acceso a tu ubicación para funciones de seguridad y seguimiento.</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyCX1v2DeJUIpCTH9S0DP9hT_IRj9z3KDFI</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
