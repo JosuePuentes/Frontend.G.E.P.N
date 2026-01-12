@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configurar la URL base de tu backend
 // Para desarrollo local: 'http://localhost:8080'
-// Para producción: 'https://backend-g-e-p-n.onrender.com'
+// Para producción: 'https://gepn-backend.onrender.com'
 const getApiBaseUrl = () => {
   // En web, verificar si estamos en localhost
   if (typeof window !== 'undefined') {
@@ -13,7 +13,7 @@ const getApiBaseUrl = () => {
     }
   }
   // Para producción o cuando no es localhost
-  return 'https://backend-g-e-p-n.onrender.com';
+  return 'https://gepn-backend.onrender.com';
 };
 
 const API_BASE_URL = getApiBaseUrl();

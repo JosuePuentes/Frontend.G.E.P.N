@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-// URL del backend - cambiar a producción cuando esté listo
-const API_BASE_URL = 'http://10.0.2.2:8080'; // Android emulator
-// const API_BASE_URL = 'http://localhost:8080'; // iOS simulator
-// const API_BASE_URL = 'https://tu-backend.com'; // Producción
+// URL del backend de producción
+const API_BASE_URL = 'https://gepn-backend.onrender.com'; // Producción
+// const API_BASE_URL = 'http://10.0.2.2:8080'; // Android emulator (desarrollo)
+// const API_BASE_URL = 'http://localhost:8080'; // iOS simulator (desarrollo)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
