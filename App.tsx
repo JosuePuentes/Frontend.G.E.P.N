@@ -26,6 +26,8 @@ import CentroCoordinacionScreen from './src/screens/CentroCoordinacionScreen';
 import ListadoDenunciasScreen from './src/screens/ListadoDenunciasScreen';
 import DetalleDenunciaScreen from './src/screens/DetalleDenunciaScreen';
 import MisDenunciasScreen from './src/screens/MisDenunciasScreen';
+import LoginPatrullajeScreen from './src/screens/LoginPatrullajeScreen';
+import MapaPatrullajeScreen from './src/screens/MapaPatrullajeScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 export type RootStackParamList = {
@@ -40,6 +42,8 @@ export type RootStackParamList = {
   ListadoDenuncias: undefined;
   DetalleDenuncia: {denunciaId: string};
   MisDenuncias: undefined;
+  LoginPatrullaje: undefined;
+  MapaPatrullaje: {funcionario: any};
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -60,6 +64,8 @@ const linking = {
           ListadoDenuncias: 'denuncias/listado',
           DetalleDenuncia: 'denuncias/:denunciaId',
           MisDenuncias: 'denuncias/mis-denuncias',
+          LoginPatrullaje: 'patrullaje/login',
+          MapaPatrullaje: 'patrullaje/mapa',
         },
   },
 };
@@ -115,6 +121,8 @@ const App = () => {
             <Stack.Screen name="ListadoDenuncias" component={ListadoDenunciasScreen} />
             <Stack.Screen name="DetalleDenuncia" component={DetalleDenunciaScreen} />
             <Stack.Screen name="MisDenuncias" component={MisDenunciasScreen} />
+            <Stack.Screen name="LoginPatrullaje" component={LoginPatrullajeScreen} />
+            <Stack.Screen name="MapaPatrullaje" component={MapaPatrullajeScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>

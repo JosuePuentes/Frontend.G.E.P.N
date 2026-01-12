@@ -225,6 +225,13 @@ const DashboardScreen: React.FC<Props> = ({navigation}) => {
             <Text style={styles.menuButtonIcon}>📱</Text>
             <Text style={styles.menuButtonText}>Escanear QR</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuButton, styles.patrullajeButton]}
+            onPress={() => navigation.navigate('LoginPatrullaje')}>
+            <Text style={styles.menuButtonIcon}>🚓</Text>
+            <Text style={styles.menuButtonText}>Patrullaje</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -346,6 +353,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#D4AF37', // Texto dorado
     textAlign: 'center',
+  },
+  patrullajeButton: {
+    backgroundColor: '#1E40AF',
+    borderColor: '#3B82F6',
+    shadowColor: '#3B82F6',
   },
   panicContainer: {
     padding: 20,
