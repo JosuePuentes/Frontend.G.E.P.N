@@ -583,3 +583,4 @@ Endpoints disponibles:
 ---
 
 **¿Dudas?** Consulta `BACKEND_INSTRUCCIONES.md` para más detalles de implementación.
+

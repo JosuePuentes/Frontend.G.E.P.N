@@ -7,7 +7,7 @@
 ## ✅ **ESTADO ACTUAL:**
 
 ```
-✅ Backend en producción: https://gepn-backend.onrender.com
+✅ Backend en producción: https://backend-g-e-p-n.onrender.com
 ✅ Frontend en Vercel: Desplegándose ahora
 ✅ Módulo de patrullaje: 100% implementado
 ✅ Google Maps configurado con API Key
@@ -40,7 +40,7 @@
 
 ## 🌐 **URLS:**
 
-- **Backend**: https://gepn-backend.onrender.com
+- **Backend**: https://backend-g-e-p-n.onrender.com
 - **Frontend (Vercel)**: https://tu-proyecto.vercel.app
 - **Repositorio Frontend**: https://github.com/JosuePuentes/Frontend.G.E.P.N
 - **Repositorio Backend**: https://github.com/JosuePuentes/Backend.G.E.P.N
@@ -51,7 +51,7 @@
 
 ### 1. Health Check:
 ```bash
-curl https://gepn-backend.onrender.com/health
+curl https://backend-g-e-p-n.onrender.com/health
 ```
 
 **Respuesta esperada:**
@@ -61,7 +61,7 @@ curl https://gepn-backend.onrender.com/health
 
 ### 2. Probar Login de Patrullaje:
 ```bash
-curl -X POST https://gepn-backend.onrender.com/api/patrullaje/login \
+curl -X POST https://backend-g-e-p-n.onrender.com/api/patrullaje/login \
   -H "Content-Type: application/json" \
   -d '{
     "credencial": "POLICIA-12345",
@@ -212,7 +212,7 @@ android/app/build/outputs/apk/release/app-release.apk
 **Solución:**
 - Verifica que el backend esté corriendo:
   ```bash
-  curl https://gepn-backend.onrender.com/health
+  curl https://backend-g-e-p-n.onrender.com/health
   ```
 - Si está en "sleep", espera 30 segundos (Render hace cold start)
 
@@ -308,3 +308,4 @@ android/app/build/outputs/apk/release/app-release.apk
 **Commit backend**: 7470725
 
 **¡A PROBARLO! 🚀**
+

@@ -414,3 +414,6 @@ Cuando un funcionario es asignado a un parte:
 - La búsqueda de funcionarios debe ser flexible: buscar por credencial exacta o por nombre (primer nombre, apellidos)
 - Considerar implementar paginación para listados grandes
 
+
+
+

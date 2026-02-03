@@ -433,3 +433,4 @@ Una vez que tengas la URL, actualiza `src/services/apiService.ts` con la URL de 
 **¡Felicidades! 🎉 Ahora tienes todo lo necesario para hacer tu app descargable.**
 
 **¿Dudas?** Consulta las guías específicas o `SOLUCION_PROBLEMAS.md`
+

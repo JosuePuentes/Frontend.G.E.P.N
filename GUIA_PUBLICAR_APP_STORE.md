@@ -582,3 +582,4 @@ Antes de enviar:
 **¡Felicidades! 🎉 Ya sabes cómo publicar en Apple App Store.**
 
 **Anterior**: Ver `GUIA_PUBLICAR_GOOGLE_PLAY.md` para Android
+

@@ -237,3 +237,4 @@ Escríbenos a [tu-email@ejemplo.com]
 ---
 
 **© 2026 G.E.P.N. Todos los derechos reservados.**
+

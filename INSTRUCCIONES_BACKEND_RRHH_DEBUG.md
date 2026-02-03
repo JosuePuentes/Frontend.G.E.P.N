@@ -234,3 +234,4 @@ Abre las herramientas de desarrollador (F12) y revisa:
 4. Comparte los logs con el desarrollador del backend
 5. Verifica en la pestaña Network si la petición se está enviando
 
+

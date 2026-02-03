@@ -82,3 +82,4 @@ Si necesitas desplegar inmediatamente:
 
 Si Vercel muestra "rate limited", espera unos minutos (20-60 segundos) y luego intenta hacer un redeploy manual desde el dashboard.
 
+

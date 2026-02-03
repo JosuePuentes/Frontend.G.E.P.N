@@ -83,3 +83,4 @@ Después de agregar el logo:
 3. Si usaste otro nombre, actualiza el código como se indica arriba
 4. Reinicia la aplicación para ver los cambios
 
+

@@ -8,8 +8,14 @@ import {
   Alert,
   Modal,
   ActivityIndicator,
+  ImageBackground,
+  SafeAreaView,
 } from 'react-native';
 import {loginPatrullaje} from '../services/patrullajeService';
+
+// Foto de fondo: coloca tu imagen en src/assets/images/login-patrullaje-fondo.png (o .jpg)
+// y cambia la línea siguiente a: require('../assets/images/login-patrullaje-fondo.png')
+const backgroundImage = require('../assets/images/Gemini_Generated_Image_5keo7m5keo7m5keo.png');
 
 interface LoginPatrullajeScreenProps {
   navigation: any;
@@ -79,58 +85,69 @@ const LoginPatrullajeScreen: React.FC<LoginPatrullajeScreenProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Patrullaje Policial</Text>
-        <Text style={styles.subtitle}>Ingresa tus credenciales</Text>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <ImageBackground
+        source={backgroundImage}
+        style={styles.backgroundImage}
+        resizeMode="cover">
+        <View style={styles.overlay} />
 
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Credencial</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ingresa tu credencial"
-            value={credencial}
-            onChangeText={setCredencial}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            editable={!loading}
-          />
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Patrullaje Policial</Text>
+            <Text style={styles.subtitle}>Ingresa tus credenciales</Text>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Credencial</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ingresa tu credencial"
+                placeholderTextColor="#6B7280"
+                value={credencial}
+                onChangeText={setCredencial}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                editable={!loading}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>PIN (6 dígitos)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="000000"
+                placeholderTextColor="#6B7280"
+                value={pin}
+                onChangeText={text => setPin(text.replace(/[^0-9]/g, ''))}
+                keyboardType="numeric"
+                maxLength={6}
+                secureTextEntry
+                editable={!loading}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.buttonText}>Iniciar Patrullaje</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              disabled={loading}>
+              <Text style={styles.backButtonText}>Volver</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>PIN (6 dígitos)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="000000"
-            value={pin}
-            onChangeText={text => setPin(text.replace(/[^0-9]/g, ''))}
-            keyboardType="numeric"
-            maxLength={6}
-            secureTextEntry
-            editable={!loading}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.buttonText}>Iniciar Patrullaje</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          disabled={loading}>
-          <Text style={styles.backButtonText}>Volver</Text>
-        </TouchableOpacity>
-      </View>
+      </ImageBackground>
 
       {/* Modal de confirmación */}
       <Modal
@@ -182,39 +199,60 @@ const LoginPatrullajeScreen: React.FC<LoginPatrullajeScreenProps> = ({
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#0a0f2e',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 36, 125, 0.55)',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+    zIndex: 1,
   },
   header: {
-    backgroundColor: '#1E40AF',
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    marginBottom: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: {width: 0, height: 2},
+    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#E5E7EB',
+    color: '#D4AF37',
     textAlign: 'center',
+    fontWeight: '500',
   },
-  form: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+  card: {
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 8},
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
   },
   inputContainer: {
     marginBottom: 20,
@@ -222,51 +260,56 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: '#00247D',
     marginBottom: 8,
   },
   input: {
     backgroundColor: '#FFF',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
     color: '#111827',
   },
   button: {
-    backgroundColor: '#1E40AF',
+    backgroundColor: '#00247D',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: 8,
+    borderWidth: 2,
+    borderColor: '#0033A0',
+    shadowColor: '#00247D',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 6,
   },
   buttonDisabled: {
-    backgroundColor: '#9CA3AF',
+    opacity: 0.7,
+    backgroundColor: '#4B5563',
+    borderColor: '#6B7280',
   },
   buttonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
   backButton: {
-    marginTop: 15,
+    marginTop: 16,
     padding: 12,
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#6B7280',
+    color: '#00247D',
     fontSize: 16,
+    fontWeight: '600',
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -276,6 +319,8 @@ const styles = StyleSheet.create({
     width: '85%',
     maxWidth: 400,
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
@@ -283,7 +328,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   modalHeader: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#00247D',
     padding: 20,
     alignItems: 'center',
   },
@@ -315,12 +360,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   modalButton: {
-    backgroundColor: '#1E40AF',
+    backgroundColor: '#00247D',
     padding: 16,
     margin: 20,
     marginTop: 10,
     borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
   },
   modalButtonText: {
     color: '#FFF',
@@ -330,3 +377,4 @@ const styles = StyleSheet.create({
 });
 
 export default LoginPatrullajeScreen;
+

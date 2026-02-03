@@ -470,3 +470,4 @@ go get github.com/golang-jwt/jwt/v4
 5. **RRHH crea Oficiales**: Usuarios con permiso `rrhh` pueden crear oficiales
 6. **Oficiales acceden**: Los oficiales creados acceden con `/api/policial/login`
 
+

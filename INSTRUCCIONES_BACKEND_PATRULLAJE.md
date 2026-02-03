@@ -607,3 +607,4 @@ Crea al menos 2 funcionarios de prueba con PIN:
 **FIN DE LAS INSTRUCCIONES**
 
 ¿Dudas? Consulta la documentación de Go + MongoDB o pregunta al equipo frontend.
+

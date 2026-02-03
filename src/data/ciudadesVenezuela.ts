@@ -238,3 +238,4 @@ export const getCiudadesByEstado = (estadoId: string): Ciudad[] => {
   return ciudadesPorEstado[estadoId] || [];
 };
 
+

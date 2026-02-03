@@ -392,3 +392,4 @@ Antes de publicar:
 **¡Felicidades! 🎉 Ya sabes cómo publicar en Google Play Store.**
 
 **Siguiente**: Ver `GUIA_PUBLICAR_APP_STORE.md` para iOS
+

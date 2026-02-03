@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 // URL del backend de producción
-const API_BASE_URL = 'https://gepn-backend.onrender.com'; // Producción
+const API_BASE_URL = 'https://backend-g-e-p-n.onrender.com'; // Producción
 // const API_BASE_URL = 'http://10.0.2.2:8080'; // Android emulator (desarrollo)
 // const API_BASE_URL = 'http://localhost:8080'; // iOS simulator (desarrollo)
 
@@ -214,3 +214,4 @@ export default {
   obtenerPatrullajesActivos,
   obtenerHistorialPatrullajes,
 };
+

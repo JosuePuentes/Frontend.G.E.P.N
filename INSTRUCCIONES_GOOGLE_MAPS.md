@@ -212,3 +212,4 @@ Si necesitas regenerar la API Key o tienes problemas:
 **Fecha de configuración**: 12 de enero de 2026
 **API Key**: AIzaSyCX1v2DeJUIpCTH9S0DP9hT_IRj9z3KDFI
 **Proyecto Google Cloud**: GEPN
+
